@@ -67,6 +67,7 @@ document.getElementById('archive').addEventListener('click', (event) => {
     const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
         intersect: true
     }, true);
+    
     if (points.length) {
         const index = points[0].index;
         if (activePoints.has(index)) {
@@ -77,8 +78,37 @@ document.getElementById('archive').addEventListener('click', (event) => {
 
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
+
+        // Обновляем график, чтобы отобразить изменения
+        updatePointStyles();
     }
 });
+// Функция для обновления стилей точек
+function updatePointStyles() {
+    // Обновляем данные графика для изменения цвета точек
+    archiveChart.data.datasets.forEach((dataset, datasetIndex) => {
+        dataset.pointBackgroundColor = dataset.data.map((_, index) => {
+            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor; // Красный для выбранных точек
+        });
+    });
+
+    // Обновляем график
+    archiveChart.update();
+
+    // Отображаем сообщение о выбранных точках
+    const messageElement = document.getElementById('message');
+    if (selectedPoints.length === 2) {
+        messageElement.innerText = `Выбраны точки: ${selectedPoints[0]} и ${selectedPoints[1]}`;
+    } else {
+        messageElement.innerText = '';
+    }
+}
+
+// Инициализация элемента для отображения сообщения
+const messageElement = document.createElement('div');
+messageElement.id = 'selection-message';
+messageElement.style.marginTop = '10px';
+document.body.appendChild(messageElement);
 
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
