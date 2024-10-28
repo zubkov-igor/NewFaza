@@ -86,19 +86,24 @@ document.getElementById('archive').addEventListener('click', (event) => {
 // Функция для обновления стилей точек
 function updatePointStyles() {
     // Обновляем данные графика для изменения цвета точек
-    archiveChart.data.datasets.forEach((dataset, datasetIndex) => {
+    archiveChart.data.datasets.forEach((dataset) => {
         dataset.pointBackgroundColor = dataset.data.map((_, index) => {
-            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor; // Красный для выбранных точек
+            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor; 
         });
     });
 
     // Обновляем график
     archiveChart.update();
 
-    // Отображаем сообщение о выбранных точках
+// Отображаем сообщение о выбранных точках
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
-        messageElement.innerText = `Выбраны точки: ${selectedPoints[0]} и ${selectedPoints[1]}`;
+        const pointData = selectedPoints.map(index => {
+            return archiveChart.data.datasets.map(dataset => {
+                return `${dataset.label}: ${dataset.data[index]}`;
+            }).join(', ');
+        });
+        messageElement.innerText = `Выбраны точки: ${pointData.join(' и ')}`;
     } else {
         messageElement.innerText = '';
     }
@@ -106,9 +111,10 @@ function updatePointStyles() {
 
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
-messageElement.id = 'selection-message';
-messageElement.style.marginTop = '10px';
+messageElement.id = 'message';
 document.body.appendChild(messageElement);
+
+/*------------------------------------------------------------------*/
 
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
