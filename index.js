@@ -1,0 +1,166 @@
+const {
+    app,
+    BrowserWindow,
+    ipcMain,
+    shell,
+    dialog
+} = require('electron');
+const ModbusRTU = require('modbus-serial');
+const fs = require('fs');
+const path = require('path');
+
+/*---------------------------------------------------------*/
+
+const {
+    execFile
+} = require('child_process');
+
+let mainWindow;
+
+function createWindow() {
+    const win = new BrowserWindow({
+        width: 1600,
+        height: 1000,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        },
+    });
+
+    win.setMenu(null);
+    win.loadFile('index.html');
+    win.webContents.openDevTools();
+}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
+
+/*----------------------------------------------------------*/
+
+// Обработчик события для сохранения нового файла
+
+ipcMain.handle('show-save-dialog', async (event) => {
+    const result = await dialog.showSaveDialog({
+        title: 'Сохранить CSV файл',
+        defaultPath: 'chart-data.csv',
+        filters: [{
+                name: 'CSV Files',
+                extensions: ['csv']
+            },
+            {
+                name: 'All Files',
+                extensions: ['*']
+            }
+        ]
+    });
+    return result.filePath; // Возвращаем путь к файлу
+});
+
+ipcMain.on('save-csv', (event, {
+    filePath,
+    csvData
+}) => {
+    if (!filePath) {
+        event.sender.send('display-message', 'Имя файла не может быть пустым', null);
+        return;
+    }
+
+    fs.writeFile(filePath, csvData, 'utf8', (err) => {
+        if (err) {
+            event.sender.send('display-message', 'Ошибка при создании файла', null);
+        } else {
+            // Отправляем сообщение об успешном сохранении с полным путем к файлу
+            event.sender.send('display-message', 'Файл успешно сохранен', filePath);
+        }
+    });
+});
+/*----------------------------------------------------------------------------------*/
+
+ipcMain.on('open-file-dialog', async (event) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        defaultPath: '/files',
+        filters: [{
+            name: 'CSV Files',
+            extensions: ['csv']
+        }]
+    });
+
+    if (!result.canceled && result.filePaths.length > 0) {
+        event.sender.send('selected-file', result.filePaths[0]);
+    }
+});
+
+/*---------------------------------------------------------------------------------*/
+
+
+// Открываем exe файл
+
+function openExeFile(filePath) {
+    execFile(filePath, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing file: ${error}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+    });
+}
+
+ipcMain.on('open-exe-file', (event, arg) => {
+    openExeFile(arg);
+});
+
+/*-------------------------------------------------*/
+// Сохраняем настройки
+
+ipcMain.on('save-json', (event, arg) => {
+    const filePath = path.join(__dirname, 'settings/settings.json');
+
+    fs.readFile(filePath, 'utf8', (err, fileData) => {
+        if (err) {
+            console.error(`Ошибка при чтении файла: ${err}`);
+            event.reply('save-json-reply', {
+                success: false,
+                message: `Ошибка при чтении файла: ${err}`
+            });
+            return;
+        }
+
+        let jsonData = JSON.parse(fileData);
+        for (const key in arg) {
+            if (jsonData[key]) {
+                jsonData[key].min = arg[key].min;
+                jsonData[key].max = arg[key].max;
+                jsonData[key].smooth = arg[key].smooth;
+            }
+        }
+
+        fs.writeFile(filePath, JSON.stringify(jsonData, null, 4), (err) => {
+            if (err) {
+                console.error(`Ошибка при сохранении файла: ${err}`);
+                event.reply('save-json-reply', {
+                    success: false,
+                    message: `Ошибка при сохранении файла: ${err}`
+                });
+            } else {
+                console.log(`Настройки успешно обновлены`);
+                event.reply('save-json-reply', {
+                    success: true,
+                    message: `Настройки успешно обновлены`
+                });
+            }
+        });
+    });
+});

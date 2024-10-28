@@ -1,0 +1,39 @@
+{
+    "name": "NewFaza",
+    "version": "0.8.2",
+    "description": "New Faza cool viewer",
+    "main": "index.js",
+    "scripts": {
+        "start": "electron index.js",
+        "build": "electron-packager . NewFaza --platform=win32 --arch=x64 --out=NewFaza"
+    },
+    "dependencies": {
+        "@serialport/bindings-cpp": "^12.0.1",
+        "chart.js": "^4.4.4",
+        "chartjs-plugin-annotation": "^3.0.1",
+        "chartjs-plugin-dragdata": "^2.3.1",
+        "chartjs-plugin-zoom": "^2.0.1",
+        "modbus-serial": "^8.0.17",
+        "node-gyp": "^10.2.0",
+        "papaparse": "^5.4.1",
+        "quickchart-js": "^3.1.3"
+    },
+    "devDependencies": {
+        "electron": "^32.0.1",
+        "electron-builder": "^25.1.8",
+        "electron-packager": "^17.1.2"
+    },
+    "build": {
+        "appId": "com.newfaza.app",
+        "files": [
+            "**/*"
+        ],
+        "buildDependenciesFromSource": true,
+        "win": {
+            "target": "NSIS"
+        },
+        "asar": true
+    },
+    "author": "Igor Zubkov",
+    "email": "zubkov.igorv@gmail.com"
+}
