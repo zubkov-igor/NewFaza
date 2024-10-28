@@ -163,9 +163,10 @@ body {
 
 .block {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1450px;
   min-width: 400px;
   height: 100%;
+  min-height: 900px;
   background-color: var(--color-light);
   border: 2px solid var(--color-blue);
   border-radius: 5px;
