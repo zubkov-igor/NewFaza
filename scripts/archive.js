@@ -34,7 +34,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     const newValue1 = parseFloat(document.getElementById('value1').value);
     const newValue2 = parseFloat(document.getElementById('value2').value);
 
-    if (selectedPoints.length === 2) {
+      if (selectedPoints.length === 2) {
         if (!isNaN(newValue1) && !isNaN(newValue2) && document.getElementById('value1').value !== '' && document.getElementById('value2').value !== '') {
             const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
             const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
@@ -52,9 +52,31 @@ document.getElementById('updateValues').addEventListener('click', () => {
 
             // Обновляем график
             archiveChart.update();
+
+            // Сброс состояния активных точек
+            activePoints.clear(); // Очищаем активные точки
         } else {
             alert("Пожалуйста, введите корректные числовые значения для обеих точек.");
         }
+    }
+});
+
+// Обработчик клика для выделения интервала
+const activePoints = new Set();
+document.getElementById('archive').addEventListener('click', (event) => {
+    const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
+        intersect: true
+    }, true);
+    if (points.length) {
+        const index = points[0].index;
+        if (activePoints.has(index)) {
+            activePoints.delete(index);
+        } else {
+            activePoints.add(index);
+        }
+
+        selectedPoints = Array.from(activePoints);
+        document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
     }
 });
 
