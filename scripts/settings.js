@@ -36,8 +36,8 @@ function displayDataInTable(dataTable) {
     });
     cell2.innerText = key; 
     cell3.innerHTML = `<div style="width: 50px; height: 20px; background-color: ${dataTable[key]?.color}; margin: 0 auto; border: 1px solid #555;"></div>`;
-    cell4.innerHTML = `<input type="text" value="${dataTable[key]?.max || ''}" style="width: 100%; padding: 4px;">`;
-    cell5.innerHTML = `<input type="text" value="${dataTable[key]?.smooth || ''}" style="width: 100%; padding: 4px;">`;
+    cell4.innerHTML = `<input type="number" value="${dataTable[key]?.max || ''}" style="width: 100%; padding: 4px;">`;
+    cell5.innerHTML = `<input type="number" value="${dataTable[key]?.smooth || ''}" style="width: 100%; padding: 4px;">`;
     cell6.innerText = dataTable[key]?.comment || ''; 
   }
 }

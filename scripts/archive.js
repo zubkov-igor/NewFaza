@@ -158,7 +158,6 @@ function handleSelectedFile(event, path) {
                 };
             }
         });
-
                     archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
                         type: 'line',
                         data: {

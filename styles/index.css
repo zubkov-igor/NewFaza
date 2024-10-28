@@ -88,15 +88,17 @@ input[type="text"] {
 }
 
 input[type="number"] {
-  font-family: inherit; 
-  font-size: inherit; 
-  line-height: inherit;
-  max-width: 200px;
-  min-width: 50px;
-  padding: 3px;
-  border: 1px solid var(--color-border);
-  margin-right: 10px;
+    max-width: 200px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    transition: border-color 0.3s;
 }
+input[type="number"]:focus {
+    border-color: 1px solid var(--color-blue); 
+    outline: none;
+  }
 
 html,
 body {
@@ -300,6 +302,7 @@ body {
 #hidden
 {
   display: none;
+  column-gap: 20px;
 }
 
   /*---------------------------------------------*/
