@@ -30,11 +30,13 @@ document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick)
 ipcRenderer.on('selected-file', handleSelectedFile);
 document.getElementById('save').addEventListener('click', saveChartAsJPG);
 
-document.getElementById('updateValues').addEventListener('click', () => {
-    const newValue1 = parseFloat(document.getElementById('value1').value);
-    const newValue2 = parseFloat(document.getElementById('value2').value);
+/*---------------------------------------------------------------------------------------------*/
 
-      if (selectedPoints.length === 2) {
+document.getElementById('updateValues').addEventListener('click', () => {
+    const newValue1 = parseFloat(document.getElementById('value1').value).toFixed(2);
+    const newValue2 = parseFloat(document.getElementById('value2').value).toFixed(2);
+
+    if (selectedPoints.length === 2) {
         if (!isNaN(newValue1) && !isNaN(newValue2) && document.getElementById('value1').value !== '' && document.getElementById('value2').value !== '') {
             const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
             const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
@@ -43,18 +45,49 @@ document.getElementById('updateValues').addEventListener('click', () => {
             archiveChart.data.datasets[0].data.splice(startIndex + 1, endIndex - startIndex - 1);
 
             // Обновляем значения выбранных точек
-            archiveChart.data.datasets[0].data[startIndex] = newValue1;
-            archiveChart.data.datasets[0].data[startIndex + 1] = newValue2; // Вставляем новое значение после первой точки
+            archiveChart.data.datasets[0].data[startIndex] = parseFloat(newValue1); // Присваиваем новое значение
+            archiveChart.data.datasets[0].data[startIndex + 1] = parseFloat(newValue2); // Присваиваем новое значение
 
             // Сбросить выбранные точки
             selectedPoints = [];
-            document.getElementById('updateValues').disabled = true;
+            activePoints.clear(); // Очищаем активные точки
+            document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
 
             // Обновляем график
             archiveChart.update();
 
             // Сброс состояния активных точек
-            activePoints.clear(); // Очищаем активные точки
+            updatePointStyles(); // Обновляем стили точек
+
+            // Очищаем поля ввода
+            document.getElementById('value1').value = '';
+            document.getElementById('value2').value = '';
+
+            // Включаем возможность выбора новых точек
+            document.getElementById('archive').addEventListener('click', (event) => {
+                const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
+                    intersect: true
+                }, true);
+                if (points.length) {
+                    const index = points[0].index;
+                    if (activePoints.has(index)) {
+                        activePoints.delete(index);
+                    } else {
+                        if (activePoints.size < 2) {
+                            activePoints.add(index);
+                        } else {
+                            alert("Вы можете выбрать только 2 точки.");
+                            activePoints.clear(); // Сбрасываем активные точки
+                        }
+                    }
+
+                    selectedPoints = Array.from(activePoints);
+                    document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
+
+                    // Обновляем стили точек
+                    updatePointStyles();
+                }
+            });
         } else {
             alert("Пожалуйста, введите корректные числовые значения для обеих точек.");
         }
@@ -63,6 +96,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
 
 // Обработчик клика для выделения интервала
 const activePoints = new Set();
+// Обработчик клика для выделения интервала
 document.getElementById('archive').addEventListener('click', (event) => {
     const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
         intersect: true
@@ -70,10 +104,23 @@ document.getElementById('archive').addEventListener('click', (event) => {
     
     if (points.length) {
         const index = points[0].index;
+
+        // Проверяем, выбрана ли уже точка
         if (activePoints.has(index)) {
-            activePoints.delete(index);
+            activePoints.delete(index); // Снимаем выделение с точки
         } else {
-            activePoints.add(index);
+            // Если выбрано меньше 2 точек, добавляем новую точку
+            if (activePoints.size < 2) {
+                activePoints.add(index); // Выбираем точку
+            } else {
+                alert("Вы можете выбрать только 2 точки."); // Сообщение, если выбрано больше 2 точек
+                // Сбрасываем выделение
+                activePoints.clear(); // Очищаем активные точки
+                selectedPoints = []; // Сбрасываем выбранные точки
+                document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
+                updatePointStyles(); // Обновляем стили точек
+                return; // Выходим из функции, чтобы предотвратить дальнейшую обработку
+            }
         }
 
         selectedPoints = Array.from(activePoints);
@@ -171,7 +218,7 @@ function handleSelectedFile(event, path) {
             if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
                 datasets.push({
                     label: label,
-                    data: formattedData.map(row => parseFloat(row[dataKey])),
+                    data: formattedData.map(row => parseFloat(row[dataKey]).toFixed(2)),
                     backgroundColor: formattedData.map(() => color), 
                     borderColor: color,
                     borderWidth: 1,
@@ -253,7 +300,7 @@ function handleSelectedFile(event, path) {
                             scales: scales,
                             elements: {
                                 point: {
-                                    radius: 2
+                                    radius: 3
                                 }
                             },
                             annotation: {

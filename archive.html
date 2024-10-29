@@ -37,8 +37,8 @@
                         <canvas id="archive"></canvas>
                         <div id="hidden">
                             <div id="message"></div>
-                            <input type="number" id="value1"  required>
-                            <input type="number" id="value2"  required>
+                            <input type="number" id="value1" min="0" required>
+                            <input type="number" id="value2" min="0" required>
                             <button class="block-item_button" id="updateValues" disabled>Обновить</button>
                         </div>
                     </div>
@@ -49,16 +49,36 @@
         </footer>
     </div>
     <script>
-    function toggleDiv() {
-        var checkbox = document.getElementById("hiddenCheck");
-        var div = document.getElementById("hidden");
-        
-        if (checkbox.checked) {
-            div.style.display = "flex"; 
-        } else {
-            div.style.display = "none"; 
+     // Function to validate input fields
+        function validateInput(inputField) {
+            inputField.addEventListener('input', function() {
+                // Check if the value is less than 0
+                if (this.value < 0) {
+                    this.value = 0; // Reset to 0 if negative
+                    alert("Отрицательные значения не допускаются. Восстановление до 0.");
+                }
+            });
         }
-    }
+
+        // Get input fields
+        const inputField1 = document.getElementById('value1');
+        const inputField2 = document.getElementById('value2');
+
+        // Validate both input fields
+        validateInput(inputField1);
+        validateInput(inputField2);
+
+        // Function to toggle the visibility of the div
+        function toggleDiv() {
+            var checkbox = document.getElementById("hiddenCheck");
+            var div = document.getElementById("hidden");
+            
+            if (checkbox.checked) {
+                div.style.display = "flex"; 
+            } else {
+                div.style.display = "none"; 
+            }
+        }
 </script>
     <script src="scripts/archive.js"></script>
 </body>
