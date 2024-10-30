@@ -10,13 +10,13 @@ function sleep(ms) {
 // Функция для обновления цвета кнопки
 function updateButtonColor(isConnected) {
    if (isConnected) {
-    statusButton.style.backgroundColor = '#47CF73';
+    statusButton.style.background = 'radial-gradient(farthest-side at top left, #47CF73, #aceac0)';
     statusButton.disabled = false;
-  /*  statusButton.textContent = 'ON'; */
+    //statusButton.textContent = 'ON';
   } else {
-    statusButton.style.backgroundColor = 'tomato';
+    statusButton.style.background = 'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
     statusButton.disabled = true;
-   /* statusButton.textContent = 'Off'; */
+    //statusButton.textContent = 'Off';
   }
 }
 
