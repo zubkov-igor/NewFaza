@@ -11,13 +11,14 @@ const {
     PointElement,
     LineElement,
     Legend,
-    Tooltip
+    Tooltip,
 } = chartjs;
-
-Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineElement, Legend, Tooltip]);
 
 const annotationPlugin = require('chartjs-plugin-annotation');
 const dragDataPlugin = require('chartjs-plugin-dragdata');
+const ChartZoom = require('chartjs-plugin-zoom');
+
+Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineElement, Legend, Tooltip, ChartZoom]);
 
 let archiveChart;
 let selectedPoints = [];
@@ -304,7 +305,34 @@ function handleSelectedFile(event, path) {
                                 annotations: []
                             }
                         },
-                        plugins: [annotationPlugin, dragDataPlugin]
+                        plugins: {
+                            zoom:{
+                                pan:{
+                                    enabled: true,
+                                    mode: 'xy'
+                                },
+                                zoom: {
+                                    enabled: true,
+                                    mode: 'xy',
+                                    rangeMin: {
+                                        x: null,
+                                        y: null
+                                    },
+                                    rangeMax: {
+                                        x: null,
+                                        y: null
+                                    }
+                                }
+                            }
+                        },
+                        transitions: {
+                            zoom: {
+                                animation: {
+                                    duration: 1000,
+                                    easing: 'easeOutCubic'
+                                }
+                            }
+                        }
                     });
 
                     // Обработчик клика для выделения интервала
