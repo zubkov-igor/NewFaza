@@ -49,7 +49,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
         alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
         // Не выходим из функции, чтобы разрешить ввод новых значений
-        return; 
+        return;
     }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
@@ -73,7 +73,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Сброс состояния активных точек
     updatePointStyles(); // Обновляем стили точек
 
-        // Очищаем поля ввода
+    // Очищаем поля ввода
     document.getElementById('value1').value = '';
     document.getElementById('value2').value = '';
 
@@ -138,7 +138,7 @@ function updatePointStyles() {
     // Обновляем график
     archiveChart.update();
 
-// Отображаем сообщение о выбранных точках
+    // Отображаем сообщение о выбранных точках
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
         const pointData = selectedPoints.map(index => {
@@ -298,41 +298,37 @@ function handleSelectedFile(event, path) {
                             scales: scales,
                             elements: {
                                 point: {
-                                    radius: 3
+                                    radius: 2
                                 }
+                            },
+                            grid:{
+                                drawBorder: true,
+                                drawOnChartArea: false,
+                                drawTicks: true
                             },
                             annotation: {
                                 annotations: []
                             }
                         },
                         plugins: {
-                            zoom:{
-                                pan:{
-                                    enabled: true,
-                                    mode: 'xy'
-                                },
-                                zoom: {
+                            zoom: {
+                                pan: {
                                     enabled: true,
                                     mode: 'xy',
-                                    rangeMin: {
-                                        x: null,
-                                        y: null
+                                    modifierKey: 'alt',
+                                },
+                                zoom:{
+                                    wheel: {
+                                        enabled: true,
                                     },
-                                    rangeMax: {
-                                        x: null,
-                                        y: null
-                                    }
+                                    pinch: {
+                                        enabled: true
+                                    },
+                                    mode: 'xy',
                                 }
                             }
                         },
-                        transitions: {
-                            zoom: {
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeOutCubic'
-                                }
-                            }
-                        }
+
                     });
 
                     // Обработчик клика для выделения интервала
@@ -342,7 +338,6 @@ function handleSelectedFile(event, path) {
         })
         .catch(error => console.error('Error fetching file:', error));
 }
-
 
 function saveChartAsJPG() {
     const chart = archiveChart;
