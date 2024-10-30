@@ -35,42 +35,49 @@ document.getElementById('save').addEventListener('click', saveChartAsJPG);
 
 // Обработчик клика для обновления значений точек
 document.getElementById('updateValues').addEventListener('click', () => {
-    const newValue1 = parseFloat(document.getElementById('value1').value).toFixed(2);
-    const newValue2 = parseFloat(document.getElementById('value2').value).toFixed(2);
+    const newValue1 = parseFloat(document.getElementById('value1').value);
+    const newValue2 = parseFloat(document.getElementById('value2').value);
 
-    if (selectedPoints.length === 2) {
-        if (!isNaN(newValue1) && !isNaN(newValue2) && document.getElementById('value1').value !== '' && document.getElementById('value2').value !== '') {
-            const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
-            const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
-
-            // Удаляем промежуточные точки
-            archiveChart.data.datasets[0].data.splice(startIndex + 1, endIndex - startIndex - 1);
-
-            // Обновляем значения выбранных точек
-            archiveChart.data.datasets[0].data[startIndex] = parseFloat(newValue1); // Присваиваем новое значение
-            archiveChart.data.datasets[0].data[startIndex + 1] = parseFloat(newValue2); // Присваиваем новое значение
-
-            // Сбросить выбранные точки
-            selectedPoints = [];
-            activePoints.clear(); // Очищаем активные точки
-            document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
-
-            // Обновляем график
-            archiveChart.update();
-
-            // Сброс состояния активных точек
-            updatePointStyles(); // Обновляем стили точек
-
-            // Очищаем поля ввода
-            document.getElementById('value1').value = '';
-            document.getElementById('value2').value = '';
-
-            // Разрешаем повторный выбор точек
-            enablePointSelection();
-        } else {
-            alert("Пожалуйста, введите корректные числовые значения для обеих точек.");
-        }
+    // Проверка на количество выбранных точек
+    if (selectedPoints.length !== 2) {
+        alert("Выберите 2 точки для обновления значений.");
+        return; // Выход из функции, если выбрано не 2 точки
     }
+
+    // Проверка на корректность вводимых значений
+    if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
+        alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
+        // Не выходим из функции, чтобы разрешить ввод новых значений
+        return; 
+    }
+
+    const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
+    const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
+
+    // Удаляем промежуточные точки
+    archiveChart.data.datasets[0].data.splice(startIndex + 1, endIndex - startIndex - 1);
+
+    // Обновляем значения выбранных точек
+    archiveChart.data.datasets[0].data[startIndex] = newValue1; // Присваиваем новое значение
+    archiveChart.data.datasets[0].data[startIndex + 1] = newValue2; // Присваиваем новое значение
+
+    // Сбросить выбранные точки
+    selectedPoints = [];
+    activePoints.clear(); // Очищаем активные точки
+    document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
+
+    // Обновляем график
+    archiveChart.update();
+
+    // Сброс состояния активных точек
+    updatePointStyles(); // Обновляем стили точек
+
+        // Очищаем поля ввода
+    document.getElementById('value1').value = '';
+    document.getElementById('value2').value = '';
+
+    // Разрешаем повторный выбор точек
+    enablePointSelection();
 });
 
 // Функция для включения выбора точек
@@ -130,12 +137,14 @@ function updatePointStyles() {
     // Обновляем график
     archiveChart.update();
 
-    // Отображаем сообщение о выбранных точках
+// Отображаем сообщение о выбранных точках
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
         const pointData = selectedPoints.map(index => {
             return archiveChart.data.datasets.map(dataset => {
-                return `${dataset.label}: ${dataset.data[index]}`;
+                // Проверка и преобразование значения перед вызовом toFixed
+                const value = parseFloat(dataset.data[index]);
+                return `${dataset.label}: ${isNaN(value) ? 'N/A' : value.toFixed(2)}`;
             }).join(', ');
         });
         messageElement.innerText = `Выбраны точки: ${pointData.join(' и ')}`;
@@ -143,7 +152,6 @@ function updatePointStyles() {
         messageElement.innerText = '';
     }
 }
-
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
