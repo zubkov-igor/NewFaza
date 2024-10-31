@@ -261,76 +261,75 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-                    archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: time,
-                            datasets: datasets
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    fontSize: 18
-                                },
-                                align: 'left'
-                            },
-                            layout: {
-                                padding: {
-                                    left: 0,
-                                    right: 0,
-                                    top: 0,
-                                    bottom: 0
-                                },
-                                backgroundColor: 'rgba(255, 255, 255, 1)'
-                            },
-                            tooltips: {
-                                enabled: true,
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        return 'Value: ' + tooltipItem.value + ' (' + tooltipItem.dataset.label + ')';
-                                    }
-                                }
-                            },
-                            scales: scales,
-                            elements: {
-                                point: {
-                                    radius: 2
-                                }
-                            },
-                            grid:{
-                                drawBorder: true,
-                                drawOnChartArea: false,
-                                drawTicks: true
-                            },
-                            annotation: {
-                                annotations: []
-                            }
-                        },
-                        plugins: {
-                            zoom: {
-                                pan: {
-                                    enabled: true,
-                                    mode: 'xy',
-                                    modifierKey: 'alt',
-                                },
-                                zoom:{
-                                    wheel: {
-                                        enabled: true,
-                                    },
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    mode: 'xy',
-                                }
-                            }
-                        },
-
-                    });
-
+             archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: time,
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    fontSize: 18
+                },
+                align: 'left'
+            },
+            tooltip: { 
+                enabled: true,
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; // Исправлено на tooltipItem.raw
+                    }
+                }
+            },
+            zoom: { 
+                pan: {
+                    enabled: true,
+                    mode: 'x',
+                    modifierKey: 'alt',
+                },
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                        modifierKey: 'ctrl',
+                    },
+                    pinch: {
+                        enabled: true
+                    },
+                    mode: 'x',
+                }
+            }
+        },
+        animation: {
+            duration: 1000,
+        },
+        hover: {
+            animationDuration: 500,
+        },
+        layout: {
+            padding: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+            }
+        },
+        scales: scales,
+        elements: {
+            point: {
+                radius: 2
+            }
+        },
+        annotation: {
+            annotations: []
+        }
+    }
+});
                     // Обработчик клика для выделения интервала
                     enablePointSelection(); // Включаем выбор точек после инициализации графика
                 }
