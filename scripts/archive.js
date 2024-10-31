@@ -249,7 +249,7 @@ function handleSelectedFile(event, path) {
                                     color: dataset.color // Используем цвет из dataset
                                 },
                                 title: {
-                                    display: true,
+                                    display: false,
                                     position: 'left',
                                     text: dataset.label,
                                     color: dataset.color, // Используем цвет из dataset

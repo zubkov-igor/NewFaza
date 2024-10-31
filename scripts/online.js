@@ -113,7 +113,7 @@ function createYAxis(chart, chartName) {
             color: chartConfig[chartName].color,
         },
         title: {
-            display: true,
+            display: false,
             text: chartName,
             color: chartConfig[chartName].color,
         }
