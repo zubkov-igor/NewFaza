@@ -101,27 +101,28 @@ function pointSelectionHandler(event) {
     if (points.length) {
         const index = points[0].index;
 
-        // Проверяем, выбрана ли уже точка
+        // Проверьте, включена ли точка
         if (activePoints.has(index)) {
-            activePoints.delete(index); // Снимаем выделение с точки
+            activePoints.delete(index); // Отменить выделение пункта
         } else {
-            // Если выбрано меньше 2 точек, добавляем новую точку
+            // Если выбраны менее 2 точек, добавить новую точку
             if (activePoints.size < 2) {
-                activePoints.add(index); // Выбираем точку
+                activePoints.add(index); // Select the point
             } else {
-                alert("Вы можете выбрать только 2 точки."); // Сообщение, если выбрано больше 2 точек
-                // Сбрасываем выделение
-                activePoints.clear(); // Очищаем активные точки
-                selectedPoints = []; // Сбрасываем выбранные точки
-                document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
-                // Не выходим из функции, продолжаем выполнение
+                // Replace alert with dialog
+                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Show dialog
+                // Reset selection
+                activePoints.clear(); // Clear active points
+                selectedPoints = []; // Reset selected points
+                document.getElementById('updateValues').disabled = true; // Disable update button
+                // Continue execution
             }
         }
 
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
 
-        // Обновляем график, чтобы отобразить изменения
+        // Update chart to reflect changes
         updatePointStyles();
     }
 }
@@ -263,9 +264,14 @@ function handleSelectedFile(event, path) {
 
              archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
     type: 'line',
-    data: {
+     data: {
         labels: time,
-        datasets: datasets
+        datasets: datasets.map(dataset => ({
+            ...dataset,
+            dragData: true, 
+            dragX: true,   
+            dragY: true
+        }))
     },
     options: {
         responsive: true,
@@ -283,7 +289,7 @@ function handleSelectedFile(event, path) {
                 enabled: true,
                 callbacks: {
                     label: function(tooltipItem) {
-                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; // Исправлено на tooltipItem.raw
+                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; 
                     }
                 }
             },
@@ -302,6 +308,18 @@ function handleSelectedFile(event, path) {
                         enabled: true
                     },
                     mode: 'x',
+                }
+            },
+             dragData: { 
+                round: 2, 
+                showTooltip: false, 
+                onDragStart: function(event, datasetIndex, index, value) {               
+                },
+                onDrag: function(event, datasetIndex, index, value) {
+                },
+                onDragEnd: function(event, datasetIndex, index, value) {
+                    datasets[datasetIndex].data[index] = value;
+                    archiveChart.update();
                 }
             }
         },

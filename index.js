@@ -85,6 +85,17 @@ ipcMain.on('save-csv', (event, {
         }
     });
 });
+
+/*----------------------------------------------------------------------------------*/
+ipcMain.on('show-alert', (event, message) => {
+    dialog.showMessageBox({
+        type: 'warning',
+        buttons: ['OK'],
+        title: 'Внимание!',
+        message: message
+    });
+});
+
 /*----------------------------------------------------------------------------------*/
 
 ipcMain.on('open-file-dialog', async (event) => {
