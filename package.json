@@ -1,6 +1,6 @@
 {
     "name": "NewFaza",
-    "version": "0.8.5",
+    "version": "0.8.9",
     "description": "New Faza cool viewer",
     "main": "index.js",
     "scripts": {
@@ -28,9 +28,11 @@
         "files": [
             "**/*"
         ],
+        "icon": "img/logo.ico", 
         "buildDependenciesFromSource": true,
         "win": {
-            "target": "NSIS"
+            "target": "NSIS",
+            "icon": "img/logo.ico" 
         },
         "asar": true
     },

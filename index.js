@@ -3,7 +3,8 @@ const {
     BrowserWindow,
     ipcMain,
     shell,
-    dialog
+    dialog,
+    session
 } = require('electron');
 const ModbusRTU = require('modbus-serial');
 const fs = require('fs');
@@ -21,6 +22,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1600,
         height: 1000,
+        icon: 'img/logo.ico',
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
@@ -44,6 +46,22 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+app.on('ready', () => {
+    const ses = session.defaultSession;
+
+    // Clear cache
+    ses.clearCache(() => {
+        console.log('Cache cleared');
+    });
+
+    // Clear cookies
+    ses.clearStorageData({
+        storages: ['cookies']
+    }, () => {
+        console.log('Cookies cleared');
+    });
 });
 
 /*----------------------------------------------------------*/
@@ -91,7 +109,7 @@ ipcMain.on('show-alert', (event, message) => {
     dialog.showMessageBox({
         type: 'warning',
         buttons: ['OK'],
-        title: 'Внимание!',
+        title: 'NewFaza - внимание!',
         message: message
     });
 });

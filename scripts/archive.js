@@ -55,12 +55,13 @@ document.getElementById('updateValues').addEventListener('click', () => {
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
 
-    // Удаляем промежуточные точки
-    archiveChart.data.datasets[0].data.splice(startIndex + 1, endIndex - startIndex - 1);
-
-    // Обновляем значения выбранных точек
-    archiveChart.data.datasets[0].data[startIndex] = newValue1; // Присваиваем новое значение
-    archiveChart.data.datasets[0].data[startIndex + 1] = newValue2; // Присваиваем новое значение
+    // Удаляем промежуточные точки на всех графиках
+    archiveChart.data.datasets.forEach((dataset) => {
+        dataset.data.splice(startIndex + 1, endIndex - startIndex - 1);
+        // Обновляем значения выбранных точек
+        dataset.data[startIndex] = newValue1; // Присваиваем новое значение
+        dataset.data[startIndex + 1] = newValue2; // Присваиваем новое значение
+    });
 
     // Сбросить выбранные точки
     selectedPoints = [];
@@ -93,6 +94,7 @@ function enablePointSelection() {
 }
 
 // Обработчик клика для выделения интервала
+// Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
     const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
         intersect: true
@@ -100,6 +102,13 @@ function pointSelectionHandler(event) {
 
     if (points.length) {
         const index = points[0].index;
+
+        // Получаем значение времени по оси X
+        const timeValue = archiveChart.data.labels[index];
+
+        // Обновляем сообщение с временем
+        const messageElement = document.getElementById('message');
+        messageElement.innerText = `Выбрано время: ${timeValue}`;
 
         // Проверьте, включена ли точка
         if (activePoints.has(index)) {
@@ -142,23 +151,19 @@ function updatePointStyles() {
     // Отображаем сообщение о выбранных точках
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
-        const pointData = selectedPoints.map(index => {
-            return archiveChart.data.datasets.map(dataset => {
-                // Проверка и преобразование значения перед вызовом toFixed
-                const value = parseFloat(dataset.data[index]);
-                return `${dataset.label}: ${isNaN(value) ? 'N/A' : value.toFixed(2)}`;
-            }).join(', ');
-        });
-        messageElement.innerText = `Выбраны точки: ${pointData.join(' и ')}`;
+        // Получаем значения времени по выбранным точкам
+        const timeValues = selectedPoints.map(index => archiveChart.data.labels[index]);
+
+        messageElement.innerText = `Выбран интервал: ${timeValues[0]} - ${timeValues[1]}`;
     } else {
         messageElement.innerText = '';
     }
 }
+
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
 document.body.appendChild(messageElement);
-
 /*------------------------------------------------------------------*/
 
 function handleSelectedFile(event, path) {
