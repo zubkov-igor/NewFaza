@@ -94,7 +94,6 @@ function enablePointSelection() {
 }
 
 // Обработчик клика для выделения интервала
-// Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
     const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
         intersect: true
@@ -232,6 +231,7 @@ function handleSelectedFile(event, path) {
                         }
                     };
 
+                    // Добавьте ваши наборы данных, как вы делали ранее
                     addDataset('ДавлениеЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
                     addDataset('ДавлениеПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
                     addDataset('Давление на выходе', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
@@ -243,6 +243,16 @@ function handleSelectedFile(event, path) {
                     addDataset('ОбъемВых', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
                     addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
+
+                    // Заполнение <select> названиями графиков
+                    const chartSelectElement = document.getElementById('chartSelect');
+   
+                    datasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.label; // Значение опции
+                        option.textContent = dataset.label; // Текст опции
+                        chartSelectElement.appendChild(option); // Добавление опции в select
+                    });
 
                     const scales = {};
                     datasets.forEach(dataset => {
@@ -267,99 +277,101 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-             archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
-    type: 'line',
-     data: {
-        labels: time,
-        datasets: datasets.map(dataset => ({
-            ...dataset,
-            dragData: true, 
-            dragX: true,   
-            dragY: true
-        }))
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-                labels: {
-                    fontSize: 18
-                },
-                align: 'left'
-            },
-            tooltip: { 
-                enabled: true,
-                callbacks: {
-                    label: function(tooltipItem) {
-                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; 
-                    }
-                }
-            },
-            zoom: { 
-                pan: {
-                    enabled: true,
-                    mode: 'x',
-                    modifierKey: 'alt',
-                },
-                zoom: {
-                    wheel: {
-                        enabled: true,
-                        modifierKey: 'ctrl',
-                    },
-                    pinch: {
-                        enabled: true
-                    },
-                    mode: 'x',
-                }
-            },
-             dragData: { 
-                round: 2, 
-                showTooltip: false, 
-                onDragStart: function(event, datasetIndex, index, value) {               
-                },
-                onDrag: function(event, datasetIndex, index, value) {
-                },
-                onDragEnd: function(event, datasetIndex, index, value) {
-                    datasets[datasetIndex].data[index] = value;
-                    archiveChart.update();
-                }
-            }
-        },
-        animation: {
-            duration: 1000,
-        },
-        hover: {
-            animationDuration: 500,
-        },
-        layout: {
-            padding: {
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-            }
-        },
-        scales: scales,
-        elements: {
-            point: {
-                radius: 2
-            }
-        },
-        annotation: {
-            annotations: []
-        }
-    }
-});
+                    // Инициализация графика
+                    archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: time,
+                            datasets: datasets.map(dataset => ({
+                                ...dataset,
+                                dragData: true, 
+                                dragX: true,   
+                                dragY: true
+                            }))
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        fontSize: 18
+                                    },
+                                    align: 'left'
+                                },
+                                tooltip: { 
+                                    enabled: true,
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; 
+                                        }
+                                    }
+                                },
+                                zoom: { 
+                                    pan: {
+                                        enabled: true,
+                                        mode: 'x',
+                                        modifierKey: 'alt',
+                                    },
+                                    zoom: {
+                                        wheel: {
+                                            enabled: true,
+                                            modifierKey: 'ctrl',
+                                        },
+                                        pinch: {
+                                            enabled: true
+                                        },
+                                        mode: 'x',
+                                    }
+                                },
+                                dragData: { 
+                                    round: 2, 
+                                    showTooltip: false, 
+                                    onDragStart: function(event, datasetIndex, index, value) {               
+                                    },
+                                    onDrag: function(event, datasetIndex, index, value) {
+                                    },
+                                    onDragEnd: function(event, datasetIndex, index, value) {
+                                        datasets[datasetIndex].data[index] = value;
+                                        archiveChart.update();
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                            },
+                            hover: {
+                                animationDuration: 500,
+                            },
+                            layout: {
+                                padding: {
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                    bottom: 0
+                                }
+                            },
+                            scales: scales,
+                            elements: {
+                                point: {
+                                    radius: 2
+                                }
+                            },
+                            annotation: {
+                                annotations: []
+                            }
+                        }
+                    });
+
                     // Обработчик клика для выделения интервала
                     enablePointSelection(); // Включаем выбор точек после инициализации графика
                 }
             });
         })
         .catch(error => console.error('Error fetching file:', error));
-}
+    }
 
 function saveChartAsJPG() {
     const chart = archiveChart;
