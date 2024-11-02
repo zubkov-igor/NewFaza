@@ -23,6 +23,7 @@ Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineEl
 let archiveChart;
 let selectedPoints = [];
 const activePoints = new Set();
+let currentChartId = null; // Переменная для хранения идентификатора текущего выбранного графика
 
 function handleOpenCsvClick() {
     ipcRenderer.send('open-file-dialog');
@@ -31,8 +32,6 @@ function handleOpenCsvClick() {
 document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick);
 ipcRenderer.on('selected-file', handleSelectedFile);
 document.getElementById('save').addEventListener('click', saveChartAsJPG);
-
-/*---------------------------------------------------------------------------------------------*/
 
 // Обработчик клика для обновления значений точек
 document.getElementById('updateValues').addEventListener('click', () => {
@@ -48,31 +47,31 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на корректность вводимых значений
     if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
         alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
-        // Не выходим из функции, чтобы разрешить ввод новых значений
         return;
     }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
 
-    // Удаляем промежуточные точки на всех графиках
-    archiveChart.data.datasets.forEach((dataset) => {
+    // Удаляем промежуточные точки на выбранном графике
+    const datasetIndex = document.getElementById('chartSelect').selectedIndex;
+    if (datasetIndex >= 0 && archiveChart) {
+        const dataset = archiveChart.data.datasets[datasetIndex];
         dataset.data.splice(startIndex + 1, endIndex - startIndex - 1);
-        // Обновляем значения выбранных точек
         dataset.data[startIndex] = newValue1; // Присваиваем новое значение
         dataset.data[startIndex + 1] = newValue2; // Присваиваем новое значение
-    });
+    }
 
     // Сбросить выбранные точки
     selectedPoints = [];
-    activePoints.clear(); // Очищаем активные точки
-    document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
+    activePoints.clear();
+    document.getElementById('updateValues').disabled = true;
 
     // Обновляем график
     archiveChart.update();
 
     // Сброс состояния активных точек
-    updatePointStyles(); // Обновляем стили точек
+    updatePointStyles();
 
     // Очищаем поля ввода
     document.getElementById('value1').value = '';
@@ -84,7 +83,6 @@ document.getElementById('updateValues').addEventListener('click', () => {
 
 // Функция для включения выбора точек
 function enablePointSelection() {
-    // Удаляем старый обработчик, если он существует
     const archiveElement = document.getElementById('archive');
     const oldHandler = pointSelectionHandler;
     archiveElement.removeEventListener('click', oldHandler); // Удаляем предыдущий обработчик
@@ -95,6 +93,11 @@ function enablePointSelection() {
 
 // Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
+    const datasetIndex = document.getElementById('chartSelect').selectedIndex;
+    if (datasetIndex < 0 || !archiveChart) {
+        return; // Если график не выбран, ничего не делаем
+    }
+
     const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
         intersect: true
     }, true);
@@ -111,37 +114,41 @@ function pointSelectionHandler(event) {
 
         // Проверьте, включена ли точка
         if (activePoints.has(index)) {
-            activePoints.delete(index); // Отменить выделение пункта
+                        activePoints.delete(index); // Отменить выделение пункта
         } else {
             // Если выбраны менее 2 точек, добавить новую точку
             if (activePoints.size < 2) {
-                activePoints.add(index); // Select the point
+                activePoints.add(index); // Выбрать точку
             } else {
-                // Replace alert with dialog
-                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Show dialog
-                // Reset selection
-                activePoints.clear(); // Clear active points
-                selectedPoints = []; // Reset selected points
-                document.getElementById('updateValues').disabled = true; // Disable update button
-                // Continue execution
+                // Если уже выбрано 2 точки, показываем предупреждение
+                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Показать диалог
+                // Сброс выделения
+                activePoints.clear(); // Очистить активные точки
+                selectedPoints = []; // Сбросить выбранные точки
+                document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
+                // Продолжить выполнение
             }
         }
 
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
 
-        // Update chart to reflect changes
+        // Обновляем график, чтобы отразить изменения
         updatePointStyles();
     }
 }
 
 // Функция для обновления стилей точек
 function updatePointStyles() {
-    // Обновляем данные графика для изменения цвета точек
-    archiveChart.data.datasets.forEach((dataset) => {
-        dataset.pointBackgroundColor = dataset.data.map((_, index) => {
-            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
-        });
+    if (!currentChartId) return; // Если график не выбран, ничего не делаем
+
+    // Обновляем данные графика для изменения цвета точек только на текущем графике
+    archiveChart.data.datasets.forEach((dataset, datasetIndex) => {
+        if (dataset.label === currentChartId) { // Проверяем, является ли текущий набор данных выбранным графиком
+            dataset.pointBackgroundColor = dataset.data.map((_, index) => {
+                return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
+            });
+        }
     });
 
     // Обновляем график
@@ -159,10 +166,19 @@ function updatePointStyles() {
     }
 }
 
+// Обработчик события для выбора графика
+document.getElementById('chartSelect').addEventListener('change', (event) => {
+    currentChartId = event.target.value; // Сохраняем идентификатор выбранного графика
+    selectedPoints = []; // Сбросить выбранные точки
+    activePoints.clear(); // Очистить активные точки
+    document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
+    updatePointStyles(); // Обновить стили точек
+});
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
 document.body.appendChild(messageElement);
+
 /*------------------------------------------------------------------*/
 
 function handleSelectedFile(event, path) {
@@ -246,7 +262,8 @@ function handleSelectedFile(event, path) {
 
                     // Заполнение <select> названиями графиков
                     const chartSelectElement = document.getElementById('chartSelect');
-   
+                    chartSelectElement.innerHTML = ''; // Очистить предыдущие опции
+
                     datasets.forEach(dataset => {
                         const option = document.createElement('option');
                         option.value = dataset.label; // Значение опции
@@ -365,13 +382,68 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-                    // Обработчик клика для выделения интервала
-                    enablePointSelection(); // Включаем выбор точек после инициализации графика
+                                       // Обработчик клика для выделения интервала
+                    enablePointSelection();
                 }
             });
         })
-        .catch(error => console.error('Error fetching file:', error));
-    }
+        .catch(error => {
+            console.error('Ошибка при загрузке файла:', error);
+        });
+}
+
+// Функция для сохранения графика как JPG
+function saveChartAsJPG() {
+    const link = document.createElement('a');
+    link.href = archiveChart.toBase64Image();
+    link.download = 'chart.jpg';
+    link.click();
+}
+
+// Слушатель события для выбора графика
+document.getElementById('chartSelect').addEventListener('change', (event) => {
+    selectedPoints = []; // Сбросить выбранные точки
+    activePoints.clear(); // Очистить активные точки
+    document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
+    updatePointStyles(); // Обновить стили точек
+});
+
+// Инициализация графика при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'archive';
+    document.body.appendChild(canvas);
+    
+    // Инициализация графика
+    archiveChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                },
+                tooltip: {
+                    enabled: true
+                }
+            }
+        }
+    });
+});
+
+// Обработчик для закрытия приложения
+ipcRenderer.on('close-app', () => {
+    window.close();
+});
+
+// Обработчик для минимизации приложения
+ipcRenderer.on('minimize-app', () => {
+    window.minimize();
+});
 
 function saveChartAsJPG() {
     const chart = archiveChart;
