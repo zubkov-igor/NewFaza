@@ -57,21 +57,22 @@ document.getElementById('updateValues').addEventListener('click', () => {
     const datasetIndex = document.getElementById('chartSelect').selectedIndex;
     if (datasetIndex >= 0 && archiveChart) {
         const dataset = archiveChart.data.datasets[datasetIndex];
-        dataset.data.splice(startIndex + 1, endIndex - startIndex - 1);
-        dataset.data[startIndex] = newValue1; // Присваиваем новое значение
-        dataset.data[startIndex + 1] = newValue2; // Присваиваем новое значение
+
+        // Обновляем значения Y для выбранных точек
+        dataset.data[startIndex] = newValue1; // Присваиваем новое значение для первой точки
+        dataset.data[endIndex] = newValue2; // Присваиваем новое значение для второй точки
+
+        // Удаляем промежуточные точки
+        dataset.data.splice(startIndex + 1, endIndex - startIndex - 1); // Удаляем промежуточные точки между startIndex и endIndex
+
+        // Обновляем график
+        archiveChart.update();
     }
 
     // Сбросить выбранные точки
     selectedPoints = [];
     activePoints.clear();
     document.getElementById('updateValues').disabled = true;
-
-    // Обновляем график
-    archiveChart.update();
-
-    // Сброс состояния активных точек
-    updatePointStyles();
 
     // Очищаем поля ввода
     document.getElementById('value1').value = '';
@@ -102,6 +103,7 @@ function pointSelectionHandler(event) {
         intersect: true
     }, true);
 
+
     if (points.length) {
         const index = points[0].index;
 
@@ -114,14 +116,14 @@ function pointSelectionHandler(event) {
 
         // Проверьте, включена ли точка
         if (activePoints.has(index)) {
-                        activePoints.delete(index); // Отменить выделение пункта
+            activePoints.delete(index); // Отменить выделение пункта
         } else {
             // Если выбраны менее 2 точек, добавить новую точку
             if (activePoints.size < 2) {
                 activePoints.add(index); // Выбрать точку
             } else {
                 // Если уже выбрано 2 точки, показываем предупреждение
-                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Показать диалог
+                                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Показать диалог
                 // Сброс выделения
                 activePoints.clear(); // Очистить активные точки
                 selectedPoints = []; // Сбросить выбранные точки
@@ -406,33 +408,6 @@ document.getElementById('chartSelect').addEventListener('change', (event) => {
     activePoints.clear(); // Очистить активные точки
     document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
     updatePointStyles(); // Обновить стили точек
-});
-
-// Инициализация графика при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'archive';
-    document.body.appendChild(canvas);
-    
-    // Инициализация графика
-    archiveChart = new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: []
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true
-                },
-                tooltip: {
-                    enabled: true
-                }
-            }
-        }
-    });
 });
 
 // Обработчик для закрытия приложения
