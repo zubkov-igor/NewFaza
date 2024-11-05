@@ -4,7 +4,9 @@ const {
 const Papa = require('papaparse');
 const chartjs = require('chart.js');
 const fastcsv = require('fast-csv');
-const { Readable } = require('stream');
+const {
+    Readable
+} = require('stream');
 const {
     Chart,
     LinearScale,
@@ -43,7 +45,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на количество выбранных точек
     if (selectedPoints.length !== 2) {
         alert("Выберите 2 точки для обновления значений.");
-        return; // Выход из функции, если выбрано не 2 точки
+        return;
     }
 
     // Проверка на корректность вводимых значений
@@ -125,12 +127,12 @@ function pointSelectionHandler(event) {
                 activePoints.add(index); // Выбрать точку
             } else {
                 // Если уже выбрано 2 точки, показываем предупреждение
-                                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Показать диалог
+                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки.");
                 // Сброс выделения
                 activePoints.clear(); // Очистить активные точки
                 selectedPoints = []; // Сбросить выбранные точки
                 document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
-                // Продолжить выполнение
+
             }
         }
 
@@ -212,9 +214,11 @@ function handleSelectedFile(event, path) {
             }
 
             // Преобразуем текстовые данные в поток и парсим с помощью fast-csv
-            const stream = Readable.from([data]); // Убедитесь, что Readable импортирован
+            const stream = Readable.from([data]);
             stream
-                .pipe(fastcsv.parse({ headers: true }))
+                .pipe(fastcsv.parse({
+                    headers: true
+                }))
                 .on('data', row => {
                     formattedData.push({
                         time: row[Object.keys(row)[0]],
@@ -311,14 +315,31 @@ function handleSelectedFile(event, path) {
                             labels: time,
                             datasets: datasets.map(dataset => ({
                                 ...dataset,
-                                dragData: true, 
-                                dragX: true,   
+                                dragData: true,
+                                dragX: true,
                                 dragY: true
                             }))
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            elements: {
+                                point: {
+                                    radius: 1.1
+                                }
+                            },
                             plugins: {
                                 legend: {
                                     display: true,
@@ -328,15 +349,15 @@ function handleSelectedFile(event, path) {
                                     },
                                     align: 'left'
                                 },
-                                tooltip: { 
+                                tooltip: {
                                     enabled: true,
                                     callbacks: {
                                         label: function(tooltipItem) {
-                                            return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')'; 
+                                            return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')';
                                         }
                                     }
                                 },
-                                zoom: { 
+                                zoom: {
                                     pan: {
                                         enabled: true,
                                         mode: 'x',
@@ -353,13 +374,11 @@ function handleSelectedFile(event, path) {
                                         mode: 'x',
                                     }
                                 },
-                                dragData: { 
-                                    round: 2, 
-                                    showTooltip: false, 
-                                    onDragStart: function(event, datasetIndex, index, value) {               
-                                    },
-                                    onDrag: function(event, datasetIndex, index, value) {
-                                    },
+                                dragData: {
+                                    round: 2,
+                                    showTooltip: false,
+                                    onDragStart: function(event, datasetIndex, index, value) {},
+                                    onDrag: function(event, datasetIndex, index, value) {},
                                     onDragEnd: function(event, datasetIndex, index, value) {
                                         datasets[datasetIndex].data[index] = value;
                                         archiveChart.update();
@@ -378,12 +397,6 @@ function handleSelectedFile(event, path) {
                                     right: 0,
                                     top: 0,
                                     bottom: 0
-                                }
-                            },
-                            scales: scales,
-                            elements: {
-                                point: {
-                                    radius: 1
                                 }
                             },
                             annotation: {
