@@ -5,12 +5,10 @@
     "main": "index.js",
     "author": "Igor Zubkov",
     "email": "zubkov.igorv@gmail.com",
-    "license": "copyleft"
-}
-
+    "license": "MIT",
     "scripts": {
         "start": "electron index.js",
-        "build": "electron-packager . NewFaza --platform=win32 --arch=x64 --out=NewFaza --icon=img/logo.ico --overwrite --app-version=0.8.9 --description='New Faza cool viewer'"
+        "build": "electron-packager . NewFaza --platform=win32 --arch=x64 --out=NewFaza --icon=img/logo.ico --overwrite --app-version=0.9.0 --description='New Faza cool viewer'"
     },
     "dependencies": {
         "@serialport/bindings-cpp": "^12.0.1",
@@ -33,7 +31,7 @@
         "files": [
             "**/*"
         ],
-       "icon": "img/logo.ico", 
+        "icon": "img/logo.ico", 
         "buildDependenciesFromSource": true,
         "win": {
             "target": "NSIS",
@@ -41,5 +39,5 @@
             "requestedExecutionLevel": "asInvoker"
         },
         "asar": true
-    },
+    }
 }

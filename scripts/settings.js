@@ -19,11 +19,11 @@ function displayDataInTable(dataTable) {
   for (const key in dataTable) {
     const row = tableBody.insertRow();
     const cell1 = row.insertCell(0); // Чекбокс
-    const cell2 = row.insertCell(1); // Ключ 
-    const cell3 = row.insertCell(2); // Цвет 
-    const cell4 = row.insertCell(3); // Max 
-    const cell5 = row.insertCell(4); // Smooth 
-    const cell6 = row.insertCell(5); // Комментарий 
+    const cell6 = row.insertCell(1); // тренды 
+    const cell2 = row.insertCell(2); // Ключ 
+    const cell3 = row.insertCell(3); // Цвет 
+    const cell4 = row.insertCell(4); // Max 
+    const cell5 = row.insertCell(5); // Smooth 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'check_box';
@@ -34,6 +34,12 @@ function displayDataInTable(dataTable) {
     checkbox.addEventListener('change', () => {
       checkboxes[key] = checkbox;  
     });
+
+   // Скрываем ячейку с ключом
+    cell2.innerText = key; 
+    cell2.style.display = 'none'; // Скрыть ячейку
+
+
     cell2.innerText = key; 
     cell3.innerHTML = `<div style="width: 50px; height: 20px; background-color: ${dataTable[key]?.color}; margin: 0 auto; border: 1px solid #555;"></div>`;
     cell4.innerHTML = `<input type="number" value="${dataTable[key]?.max || ''}" style="width: 100%; padding: 4px;">`;
