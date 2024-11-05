@@ -3,6 +3,8 @@ const {
 } = require('electron');
 const Papa = require('papaparse');
 const chartjs = require('chart.js');
+const fastcsv = require('fast-csv');
+const { Readable } = require('stream');
 const {
     Chart,
     LinearScale,
@@ -192,6 +194,10 @@ function handleSelectedFile(event, path) {
         archiveChart = null;
     }
 
+    const datasets = [];
+    const formattedData = [];
+
+    // Используем fetch для загрузки данных
     fetch(path)
         .then(response => {
             if (!response.ok) {
@@ -205,10 +211,12 @@ function handleSelectedFile(event, path) {
                 data = data.slice(1);
             }
 
-            Papa.parse(data, {
-                header: true,
-                complete: (results) => {
-                    const formattedData = results.data.map(row => ({
+            // Преобразуем текстовые данные в поток и парсим с помощью fast-csv
+            const stream = Readable.from([data]); // Убедитесь, что Readable импортирован
+            stream
+                .pipe(fastcsv.parse({ headers: true }))
+                .on('data', row => {
+                    formattedData.push({
                         time: row[Object.keys(row)[0]],
                         P_left: row['P_left'],
                         P_right: row['P_right'],
@@ -221,8 +229,9 @@ function handleSelectedFile(event, path) {
                         V_pipe: row['V_pipe'],
                         Qw: row['Qw'],
                         Plm: row['Plm']
-                    }));
-
+                    });
+                })
+                .on('end', () => {
                     const time = formattedData.map(row => {
                         const parsedTime = Date.parse(row.time);
                         return isNaN(parsedTime) ? null : new Date(parsedTime).toLocaleTimeString('en-US', {
@@ -233,7 +242,6 @@ function handleSelectedFile(event, path) {
                         });
                     });
 
-                    const datasets = [];
                     const addDataset = (label, dataKey, color, yAxisID) => {
                         if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
                             datasets.push({
@@ -249,17 +257,17 @@ function handleSelectedFile(event, path) {
                         }
                     };
 
-                    // Добавьте ваши наборы данных, как вы делали ранее
+                    // Добавление наборов данных
                     addDataset('ДавлениеЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
                     addDataset('ДавлениеПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
                     addDataset('Давление на выходе', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
                     addDataset('РасходЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
                     addDataset('РасходПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
-                    addDataset('РасВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
-                    addDataset('ТемпРец', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
-                    addDataset('ПлотРец', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
-                    addDataset('ОбъемВых', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
-                    addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
+                    addDataset('Расход на выходе', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
+                    addDataset('Температура Рециркуляции', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
+                    addDataset('Давление Рециркуляции', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
+                    addDataset('Объем на выходе', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
+                    addDataset('Расход Воды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
                     // Заполнение <select> названиями графиков
@@ -375,7 +383,7 @@ function handleSelectedFile(event, path) {
                             scales: scales,
                             elements: {
                                 point: {
-                                    radius: 2
+                                    radius: 1
                                 }
                             },
                             annotation: {
@@ -384,11 +392,10 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-                                       // Обработчик клика для выделения интервала
+                    // Обработчик клика для выделения интервала
                     enablePointSelection();
-                }
-            });
-        })
+                }); // Закрывающая скобка для .on('end')
+        }) // Закрывающая скобка для второго .then
         .catch(error => {
             console.error('Ошибка при загрузке файла:', error);
         });
