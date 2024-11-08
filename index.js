@@ -66,34 +66,24 @@ app.on('ready', () => {
 
 /*----------------------------------------------------------*/
 
-// Обработчик события для сохранения нового файла
-
-ipcMain.handle('show-save-dialog', async (event) => {
+// Обработчик для показа диалогового окна сохранения файла
+ipcMain.handle('show-save-dialog', async () => {
     const result = await dialog.showSaveDialog({
         title: 'Сохранить CSV файл',
         defaultPath: 'chart-data.csv',
-        filters: [{
-                name: 'CSV Files',
-                extensions: ['csv']
-            },
-            {
-                name: 'All Files',
-                extensions: ['*']
-            }
+        filters: [
+            { name: 'CSV Files', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
         ]
     });
     return result.filePath; // Возвращаем путь к файлу
 });
-
-ipcMain.on('save-csv', (event, {
-    filePath,
-    csvData
-}) => {
+// Обработчик для сохранения CSV
+ipcMain.on('save-csv', (event, { filePath, csvData }) => {
     if (!filePath) {
         event.sender.send('display-message', 'Имя файла не может быть пустым', null);
         return;
     }
-
     fs.writeFile(filePath, csvData, 'utf8', (err) => {
         if (err) {
             event.sender.send('display-message', 'Ошибка при создании файла', null);
@@ -103,7 +93,7 @@ ipcMain.on('save-csv', (event, {
         }
     });
 });
-
+app.whenReady().then(createWindow);
 /*----------------------------------------------------------------------------------*/
 ipcMain.on('show-alert', (event, message) => {
     dialog.showMessageBox({

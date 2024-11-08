@@ -189,27 +189,65 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startButton').addEventListener('click', startChart);
 });
 // Функция для преобразования данных в формат CSV
-function convertToCSV(data) {
-    const headers = ['Time', ...data.map(dataset => dataset.label)];
-    const rows = onlineChart.data.labels.map((t, index) => {
-        const row = [t];
-        data.forEach(dataset => {
-            row.push(dataset.data[index] || '');
+
+function convertToCSV() {
+    // Проверяем, существуют ли данные
+    if (!onlineChart || !onlineChart.data || !onlineChart.data.labels || !onlineChart.data.datasets) {
+        throw new Error('Данные для преобразования в CSV отсутствуют');
+    }
+    // Определяем заголовки CSV
+    const headers = ['Client', 'bush', 'well', 'name_work'];
+    // Создаем строки для данных
+    const rows = onlineChart.data.labels.map((label, index) => {
+        const row = [];
+        // Извлекаем данные по каждому заголовку
+        headers.forEach(header => {
+            const dataset = onlineChart.data.datasets.find(ds => ds.label === header);
+            row.push(dataset ? dataset.data[index] || '' : ''); // Добавляем значение или пустую строку
         });
-        return row.join(',');
+        return row.join(','); // Преобразуем строку в формат CSV
     });
+    // Объединяем заголовки и строки в одну строку CSV
     return [headers.join(','), ...rows].join('\n');
 }
-// Сохранение данных графика в CSV
+
+
+
+// Функция для преобразования данных в формат CSV
+function convertInputsToCSV() {
+    const client = document.getElementById('client').value;
+    const bush = document.getElementById('bush').value;
+    const well = document.getElementById('well').value;
+    const nameWork = document.getElementById('name_work').value;
+    // Создаем массив строк CSV
+    const csvData = [
+        ['Заказчик', 'Куст', 'Скважина', 'Название работы'],
+        [client, bush, well, nameWork]
+    ];
+    // Преобразуем массив в строку CSV
+    return csvData.map(row => row.join(',')).join('\n');
+}
+
+
+// Объявление функции
 async function saveChartDataToCSV() {
-    const csvData = convertToCSV(onlineChart.data.datasets);
-    const filePath = await ipcRenderer.invoke('show-save-dialog');
-    if (filePath) {
-        ipcRenderer.send('save-csv', { filePath, csvData });
-    } else {
-        displayMessage('Файл не сохранен');
+    try {
+        const csvData = convertToCSV();
+        const filePath = await ipcRenderer.invoke('show-save-dialog');
+        if (filePath) {
+            ipcRenderer.send('save-csv', { filePath, csvData });
+        } else {
+            displayMessage('Файл не сохранен');
+        }
+    } catch (error) {
+        displayMessage(`Ошибка: ${error.message}`);
     }
 }
+// Добавление обработчика события
+document.getElementById('apply').addEventListener('click', saveChartDataToCSV);
+
+
+
 // Обработка сообщения о сохранении
 ipcRenderer.on('display-message', (event, message, filePath) => {
     const messageElement = document.getElementById('message');

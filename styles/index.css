@@ -312,30 +312,6 @@ body {
   align-items: center;
 }
 
-.form-container {
-    width: 400px; 
-    height: 400px;
-    background-color: var(--color-light); 
-    border: 1px solid var(--color-border); 
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 20px;
-}
-
-.form-input {
-    margin-bottom: 10px; 
-    padding: 10px; 
-    border: 1px solid var(--color-border);
-    border-radius: 4px; 
-}
-
-label {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-
 .start {
   background-color: var(--bs-orange);
   padding: 10px 15px;
@@ -343,12 +319,6 @@ label {
   color: var(--color-light);
 }
 
-.stop {
-  background-color: var(--bs-info);
-  padding: 10px 15px;
-  border-radius: 5px;
-  color: var(--color-light);
-}
 
 /*---------------------------------------------*/
 
@@ -439,5 +409,33 @@ div.blueTable {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 0;
+    padding: 1px 0;
+  }
+
+  .footer__container {
+    width: 1450px;
+    margin: 0 auto;
+  }
+
+  .form-container {
+    width: 100%; 
+    background-color: var(--color-light); 
+    border: 1px solid var(--color-border); 
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center ;
+    padding: 10px;
+}
+
+.form-input {
+    margin-bottom: 5px; 
+    padding: 5px; 
+    border: 1px solid var(--color-border);
+    border-radius: 5px; 
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
   }
