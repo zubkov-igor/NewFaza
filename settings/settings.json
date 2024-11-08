@@ -1,6 +1,6 @@
 {
     "P_left": {
-        "active": 1,
+        "active": 0,
         "color": "#990002",
         "max": 500,
         "smooth": 20,
@@ -14,28 +14,28 @@
         "trend": "Давление правого насоса"
     },
     "P_pipe": {
-        "active": 1,
+        "active": 0,
         "color": "#fe0000",
         "max": 300,
         "smooth": 10,
         "trend": "Давление на выходе"
     },
     "Q_left": {
-        "active": 1,
+        "active": 0,
         "color": "#3399fe",
         "max": 500,
         "smooth": 10,
         "trend": "Расход левого насоса"
     },
     "Q_right": {
-        "active": 1,
+        "active": 0,
         "color": "#98ccfe",
         "max": 500,
         "smooth": 10,
         "trend": "Расход правого насоса"
     },
     "Q_pipe": {
-        "active": 1,
+        "active": 0,
         "color": "#0000FF",
         "max": 500,
         "smooth": 1,
@@ -56,21 +56,21 @@
         "trend": "Плотность рециркуляции"
     },
     "V_pipe": {
-        "active": 1,
+        "active": 0,
         "color": "#000000",
         "max": 500,
         "smooth": 10,
         "trend": "Объем на выходе"
     },
     "Qw": {
-        "active": 1,
+        "active": 0,
         "color": "#ff6600",
         "max": 500,
         "smooth": 10,
         "trend": "Расход воды"
     },
     "Plm": {
-        "active": 1,
+        "active": 0,
         "color": "#009900",
         "max": 500,
         "smooth": 10,

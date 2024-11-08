@@ -306,6 +306,22 @@ datasets.forEach(dataset => {
                         }
                     });
 
+// Определите плагин для добавления текста
+const textPlugin = {
+    id: 'textPlugin',
+    beforeDraw: function(chart) {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '13px Arial';
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+        const x = chart.width - 10; // 10 пикселей от правого края
+        const y = 5; // 10 пикселей от верхнего края
+        ctx.fillText('Заказчик: Инвестгеосервис. Куст:56. Скв:5608. Кондуктор 245мм', x, y);
+        ctx.restore();
+    }
+};
 
 // Инициализация графика
 archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
@@ -325,7 +341,8 @@ archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
         scales: scales,
         plugins: {
             legend: {
-                display: true
+                display: true,
+                align: 'start'
             },
             tooltip: {
                 enabled: true,
@@ -385,7 +402,8 @@ archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
         annotation: {
             annotations: []
         }
-    }
+    },
+    plugins: [textPlugin]
 });
 
 
