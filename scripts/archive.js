@@ -1,12 +1,9 @@
 const {
     ipcRenderer
 } = require('electron');
-const Papa = require('papaparse');
+const { Readable } = require('stream');
 const chartjs = require('chart.js');
 const fastcsv = require('fast-csv');
-const {
-    Readable
-} = require('stream');
 const {
     Chart,
     LinearScale,
@@ -27,7 +24,7 @@ Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineEl
 let archiveChart;
 let selectedPoints = [];
 const activePoints = new Set();
-let currentChartId = null; // Переменная для хранения идентификатора текущего выбранного графика
+let currentChartId = null;
 
 function handleOpenCsvClick() {
     ipcRenderer.send('open-file-dialog');
@@ -35,7 +32,7 @@ function handleOpenCsvClick() {
 
 document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick);
 ipcRenderer.on('selected-file', handleSelectedFile);
-document.getElementById('save').addEventListener('click', saveChartAsJPG);
+document.getElementById('save').addEventListener('click', saveChartAsPNG);
 
 // Обработчик клика для обновления значений точек
 document.getElementById('updateValues').addEventListener('click', () => {
@@ -45,13 +42,13 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на количество выбранных точек
     if (selectedPoints.length !== 2) {
         alert("Выберите 2 точки для обновления значений.");
-        return;
+        return; // Выход из функции, если выбрано не 2 точки
     }
 
     // Проверка на корректность вводимых значений
     if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
         alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
-        return;
+        return; // Не выходим из функции, чтобы разрешить ввод новых значений
     }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
@@ -86,16 +83,6 @@ document.getElementById('updateValues').addEventListener('click', () => {
     enablePointSelection();
 });
 
-// Функция для включения выбора точек
-function enablePointSelection() {
-    const archiveElement = document.getElementById('archive');
-    const oldHandler = pointSelectionHandler;
-    archiveElement.removeEventListener('click', oldHandler); // Удаляем предыдущий обработчик
-
-    // Добавляем новый обработчик для выбора точек
-    archiveElement.addEventListener('click', pointSelectionHandler);
-}
-
 // Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
     const datasetIndex = document.getElementById('chartSelect').selectedIndex;
@@ -107,7 +94,6 @@ function pointSelectionHandler(event) {
         intersect: true
     }, true);
 
-
     if (points.length) {
         const index = points[0].index;
 
@@ -118,7 +104,7 @@ function pointSelectionHandler(event) {
         const messageElement = document.getElementById('message');
         messageElement.innerText = `Выбрано время: ${timeValue}`;
 
-        // Проверьте, включена ли точка
+        // Проверяем, включена ли точка
         if (activePoints.has(index)) {
             activePoints.delete(index); // Отменить выделение пункта
         } else {
@@ -132,7 +118,6 @@ function pointSelectionHandler(event) {
                 activePoints.clear(); // Очистить активные точки
                 selectedPoints = []; // Сбросить выбранные точки
                 document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
-
             }
         }
 
@@ -148,7 +133,6 @@ function pointSelectionHandler(event) {
 function updatePointStyles() {
     if (!currentChartId) return; // Если график не выбран, ничего не делаем
 
-    // Обновляем данные графика для изменения цвета точек только на текущем графике
     archiveChart.data.datasets.forEach((dataset, datasetIndex) => {
         if (dataset.label === currentChartId) { // Проверяем, является ли текущий набор данных выбранным графиком
             dataset.pointBackgroundColor = dataset.data.map((_, index) => {
@@ -157,7 +141,6 @@ function updatePointStyles() {
         }
     });
 
-    // Обновляем график
     archiveChart.update();
 
     // Отображаем сообщение о выбранных точках
@@ -180,6 +163,7 @@ document.getElementById('chartSelect').addEventListener('change', (event) => {
     document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
     updatePointStyles(); // Обновить стили точек
 });
+
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
@@ -213,7 +197,6 @@ function handleSelectedFile(event, path) {
                 data = data.slice(1);
             }
 
-            // Преобразуем текстовые данные в поток и парсим с помощью fast-csv
             const stream = Readable.from([data]);
             stream
                 .pipe(fastcsv.parse({
@@ -285,182 +268,171 @@ function handleSelectedFile(event, path) {
                         chartSelectElement.appendChild(option); // Добавление опции в select
                     });
 
-                    const scales = {};
-                    datasets.forEach(dataset => {
+const scales = {
+    x: { 
+        display: true,
+        ticks: {
+            display: true,
+            position: 'bottom',
+            length: 10,
+            color: '#000'
+        },
+        grid: {
+            display: false
+        }
+    }
+};
+
+datasets.forEach(dataset => {
                         if (dataset.yAxisID) {
                             scales[dataset.yAxisID] = {
                                 display: true,
                                 ticks: {
                                     display: true,
                                     position: 'left',
-                                    color: dataset.color // Используем цвет из dataset
+                                    color: dataset.color 
                                 },
                                 title: {
                                     display: false,
                                     position: 'left',
                                     text: dataset.label,
-                                    color: dataset.color, // Используем цвет из dataset
+                                    color: dataset.color,
                                 },
-                                font: {
-                                    size: 18
-                                },
+                                grid: {
+                                    display: false
+                                }
+                                
                             };
                         }
                     });
 
-                    // Инициализация графика
-                    archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: time,
-                            datasets: datasets.map(dataset => ({
-                                ...dataset,
-                                dragData: true,
-                                dragX: true,
-                                dragY: true
-                            }))
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            scales: {
-                                x: {
-                                    grid: {
-                                        display: false
-                                    }
-                                },
-                                y: {
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            },
-                            elements: {
-                                point: {
-                                    radius: 1.1
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                    labels: {
-                                        fontSize: 18
-                                    },
-                                    align: 'left'
-                                },
-                                tooltip: {
-                                    enabled: true,
-                                    callbacks: {
-                                        label: function(tooltipItem) {
-                                            return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')';
-                                        }
-                                    }
-                                },
-                                zoom: {
-                                    pan: {
-                                        enabled: true,
-                                        mode: 'x',
-                                        modifierKey: 'alt',
-                                    },
-                                    zoom: {
-                                        wheel: {
-                                            enabled: true,
-                                            modifierKey: 'ctrl',
-                                        },
-                                        pinch: {
-                                            enabled: true
-                                        },
-                                        mode: 'x',
-                                    }
-                                },
-                                dragData: {
-                                    round: 2,
-                                    showTooltip: false,
-                                    onDragStart: function(event, datasetIndex, index, value) {},
-                                    onDrag: function(event, datasetIndex, index, value) {},
-                                    onDragEnd: function(event, datasetIndex, index, value) {
-                                        datasets[datasetIndex].data[index] = value;
-                                        archiveChart.update();
-                                    }
-                                }
-                            },
-                            animation: {
-                                duration: 1000,
-                            },
-                            hover: {
-                                animationDuration: 500,
-                            },
-                            layout: {
-                                padding: {
-                                    left: 0,
-                                    right: 0,
-                                    top: 0,
-                                    bottom: 0
-                                }
-                            },
-                            annotation: {
-                                annotations: []
-                            }
-                        }
-                    });
+
+// Инициализация графика
+archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: time,
+        datasets: datasets.map(dataset => ({
+            ...dataset,
+            dragData: true,
+            dragX: true,
+            dragY: true
+        }))
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: scales,
+        plugins: {
+            legend: {
+                display: true
+            },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')';
+                    }
+                }
+            },
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'x',
+                    modifierKey: 'alt',
+                },
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                        modifierKey: 'ctrl',
+                    },
+                    pinch: {
+                        enabled: true
+                    },
+                    mode: 'x',
+                }
+            },
+            dragData: {
+                round: 2,
+                showTooltip: false,
+                onDragStart: function(event, datasetIndex, index, value) {},
+                onDrag: function(event, datasetIndex, index, value) {},
+                onDragEnd: function(event, datasetIndex, index, value) {
+                    datasets[datasetIndex].data[index] = value;
+                    archiveChart.update();
+                }
+            }
+        },
+        animation: {
+            duration: 1000,
+        },
+        hover: {
+            animationDuration: 500,
+        },
+        layout: {
+            padding: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+            }
+        },
+        elements: {
+            point: {
+                radius: 0
+            }
+        },
+        annotation: {
+            annotations: []
+        }
+    }
+});
+
 
                     // Обработчик клика для выделения интервала
-                    enablePointSelection();
-                }); // Закрывающая скобка для .on('end')
-        }) // Закрывающая скобка для второго .then
-        .catch(error => {
-            console.error('Ошибка при загрузке файла:', error);
-        });
+                    enablePointSelection(); // Включаем выбор точек после инициализации графика
+                });
+        })
+        .catch(error => console.error('Error fetching file:', error));
 }
 
-// Функция для сохранения графика как JPG
-function saveChartAsJPG() {
-    const link = document.createElement('a');
-    link.href = archiveChart.toBase64Image();
-    link.download = 'chart.jpg';
-    link.click();
-}
-
-// Слушатель события для выбора графика
-document.getElementById('chartSelect').addEventListener('change', (event) => {
-    selectedPoints = []; // Сбросить выбранные точки
-    activePoints.clear(); // Очистить активные точки
-    document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
-    updatePointStyles(); // Обновить стили точек
-});
-
-// Обработчик для закрытия приложения
-ipcRenderer.on('close-app', () => {
-    window.close();
-});
-
-// Обработчик для минимизации приложения
-ipcRenderer.on('minimize-app', () => {
-    window.minimize();
-});
-
-function saveChartAsJPG() {
+// Функция для сохранения графика как PNG
+function saveChartAsPNG() {
     const chart = archiveChart;
     const canvas = chart.canvas;
-
-    // Создаем временный canvas для заполнения фона
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
     const ctx = tempCanvas.getContext('2d');
-
-    // Заполняем фон белым цветом
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-    // Рисуем оригинальный canvas на временном canvas
     ctx.drawImage(canvas, 0, 0);
-
-    // Получаем dataURL из временного canvas
-    const dataURL = tempCanvas.toDataURL('image/jpeg', 0.9);
+    const dataURL = tempCanvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataURL;
-    a.download = 'chart.jpg';
+    a.download = 'chart.png';
     a.click();
 }
+
+// Функция для включения выбора точек на графике
+function enablePointSelection() {
+    const canvas = document.getElementById('archive');
+    canvas.addEventListener('click', pointSelectionHandler);
+}
+
+// Инициализация выбора точек после загрузки графика
+function init() {
+    document.getElementById('chartSelect').dispatchEvent(new Event('change')); // Инициализация при загрузке
+}
+
+// Запуск инициализации
+init();
+
+// Обработчик события для закрытия окна приложения
+window.addEventListener('beforeunload', () => {
+    if (archiveChart) {
+        archiveChart.destroy();
+        archiveChart = null;
+    }
+});
+
