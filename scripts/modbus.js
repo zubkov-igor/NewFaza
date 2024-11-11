@@ -23,7 +23,7 @@ function updateButtonColor(isConnected) {
 // Попытка подключения к устройству Modbus TCP
 async function connectModbus() {
     try {
-        await client.connectTCP("186.168.65.5", { port: 502 });
+        await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         updateButtonColor(true);
     } catch (error) {

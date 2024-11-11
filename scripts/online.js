@@ -40,7 +40,7 @@ function updateButtonColor(isConnected) {
 // Подключение к устройству Modbus TCP
 async function connectModbus() {
     try {
-        await client.connectTCP("186.168.65.5", { port: 502 });
+        await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         updateButtonColor(true);
     } catch (error) {
@@ -211,47 +211,79 @@ function convertToCSV() {
     return [headers.join(','), ...rows].join('\n');
 }
 
-
-
 // Функция для преобразования данных в формат CSV
 function convertInputsToCSV() {
     const client = document.getElementById('client').value;
     const bush = document.getElementById('bush').value;
     const well = document.getElementById('well').value;
     const nameWork = document.getElementById('name_work').value;
+
+    // Проверяем, заполнены ли все поля
+    if (!client || !bush || !well || !nameWork) {
+        return null; // Возвращаем null, если поля не заполнены
+    }
+
+    // Получаем текущую дату в формате DD:MM:YY
+    const currentDate = new Date();
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+    const year = String(currentDate.getFullYear()).slice(-2); // Берем последние 2 цифры года
+    const formattedDate = `${day}:${month}:${year}`; // Форматируем дату
+
     // Создаем массив строк CSV
     const csvData = [
-        ['Заказчик', 'Куст', 'Скважина', 'Название работы'],
-        [client, bush, well, nameWork]
+        ['Заказчик', 'Куст', 'Скважина', 'Название работы', 'Дата'], // Добавляем заголовок для даты
+        [client, bush, well, nameWork, formattedDate] // Добавляем данные с текущей датой
     ];
+    
     // Преобразуем массив в строку CSV
     return csvData.map(row => row.join(',')).join('\n');
 }
 
-
 // Объявление функции
 async function saveChartDataToCSV() {
+    const csvData = convertInputsToCSV(); // Получаем данные CSV или null, если есть ошибка
+    
+    // Проверяем, есть ли сообщение об ошибке
+    if (!csvData) {
+        const messageElement = document.getElementById('message');
+        messageElement.textContent = 'Не все поля заполнены, файл не создан.'; // Выводим сообщение об ошибке
+        messageElement.style.color = 'red';
+        messageElement.style.display = 'inline';
+        return; // Выходим из функции, если есть ошибка
+    }
+
     try {
-        const csvData = convertToCSV();
-        const filePath = await ipcRenderer.invoke('show-save-dialog');
+        const filePath = await ipcRenderer.invoke('show-save-dialog'); // Открываем диалог для сохранения файла
+        
         if (filePath) {
-            ipcRenderer.send('save-csv', { filePath, csvData });
+            ipcRenderer.send('save-csv', { filePath, csvData }); // Отправляем данные для сохранения
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = `Файл успешно создан: ${filePath}`; // Сообщение об успешном сохранении
+            messageElement.style.color = 'green';
+            messageElement.style.display = 'inline';
         } else {
-            displayMessage('Файл не сохранен');
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = 'Не удалось сохранить файл.'; // Сообщение, если файл не был сохранен
+            messageElement.style.color = 'red';
+            messageElement.style.display = 'inline';
         }
     } catch (error) {
-        displayMessage(`Ошибка: ${error.message}`);
+        const messageElement = document.getElementById('message');
+        messageElement.textContent = `Ошибка: ${error.message}`; // Выводим сообщение об ошибке
+        messageElement.style.color = 'red'; // Устанавливаем цвет текста в красный
+        messageElement.style.display = 'inline'; // Делаем элемент видимым
     }
 }
+
 // Добавление обработчика события
 document.getElementById('apply').addEventListener('click', saveChartDataToCSV);
 
-
-
-// Обработка сообщения о сохранении
+// Обработчик для отображения сообщений
 ipcRenderer.on('display-message', (event, message, filePath) => {
     const messageElement = document.getElementById('message');
-    messageElement.textContent = `${message} ${filePath ? `${filePath})` : ''}`;
+    messageElement.textContent = `${message} ${filePath ? `(${filePath})` : ''}`;
+    messageElement.style.color = 'green';
     messageElement.style.display = 'inline';
     messageElement.classList.remove('hide'); 
     setTimeout(() => {

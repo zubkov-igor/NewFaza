@@ -1,59 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'" />
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
-	<link rel="stylesheet" href="styles/index.css">
-	<link rel="icon" href="img/logo.ico" type="image/x-icon">
-	<title>New Faza - online</title>
+    <link rel="stylesheet" href="styles/index.css">
+    <link rel="icon" href="img/logo.ico" type="image/x-icon">
+    <title>New Faza - online</title>
 </head>
+
 <body>
-	<div class="wrapper">
-		<header class="header">
-		</header>
-		<main class="main">
-			<h1>Online</h1>
-			<div class="main__content">
-				<div class="block">
-				<div class="block__menu">
-			<a href="index.html"><button class="profile__back back-button" type="button">
-				<svg class="back-button__icon" viewBox="0 0 320 512" height="18" width="18">
-					<path fill="currentColor" d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
-				</svg>
-			</button></a>
-			<button class="block-item_button" id="saveCsvButton">Сохранить</button>
-			<button id="startButton" class="start">Старт</button>
-			<div id="message"></div>
-		   <div class="button__online-little" id="statusButton"></div>
-			</div>
+    <div class="wrapper">
+        <header class="header">
+            <h1>New Faza - online</h1>
+        </header>
+        <main class="main">
+            <div class="main__content">
+                <div class="block">
+                    <div class="block__menu">
+                        <a href="index.html"><button class="profile__back back-button" type="button">
+                                <svg class="back-button__icon" viewBox="0 0 320 512" height="18" width="18">
+                                    <path fill="currentColor" d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+                                </svg>
+                            </button></a>
+                        <button id="startButton" class="start-button">Старт</button>
+                        <button id="saveCsvButton" class="stop-button">Стоп</button>
+                        <div id="message"></div>
+                        <div class="button__online-little" id="statusButton"></div>
+                    </div>
 
-		<div class="block__main">
-		<canvas id="online"></canvas>
-			</div>
-				</div>
-			</div>
-		</main>
-		<footer class="footer">
-			<div class="footer__container">
-			<div class="form-container">
-				<label for="client">Заказчик:</label>	
-			<input type="text" id="client" class="form-input" placeholder="Заказчик" />
-
-			<label for="bush">Куст:</label>
-            <input type="number" id="bush" class="form-input" placeholder="Куст" />
-
-            <label for="well">Скважина:</label>
-            <input type="number" id="well" class="form-input" placeholder="Скважина" />
-
-            <label for="name_work">Название работы:</label>
-            <input type="text" id="name_work" class="form-input" placeholder="Название работы" />
-            <button class="block-item_button" id="apply">Применить</button>
+                    <div class="block__main">
+                        <canvas id="online"></canvas>
+                    </div>
+                </div>
             </div>
-			</div>
-		</footer>
-	</div>
-<script src="scripts/online.js"></script>
+        </main>
+        <footer class="footer">
+            <div class="footer__container">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="client">Заказчик:<sup>*</sup></label>
+                        <input type="text" required id="client" class="form-input" placeholder="Заказчик" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bush">Куст:<sup>*</sup></label>
+                        <input type="number" required id="bush" class="form-input" placeholder="Куст" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="well">Скважина:<sup>*</sup></label>
+                        <input type="number" required id="well" class="form-input" placeholder="Скважина" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name_work">Название работы:<sup>*</sup></label>
+                        <input type="text" required id="name_work" class="form-input" placeholder="Название работы" />
+                    </div>
+                    <div class="form-group">
+                        <button class="block-item_button" id="apply">Применить</button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="scripts/online.js"></script>
 </body>
+
 </html>
