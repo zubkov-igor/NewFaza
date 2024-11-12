@@ -156,7 +156,7 @@ body {
 
 .block__menu {
   display: flex;
-  min-height: 40px;
+  min-height: 50px;
   padding: 0 20px;
   border-bottom: 1px solid var(--color-border);
   justify-content: space-between;

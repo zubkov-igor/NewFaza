@@ -1,75 +1,75 @@
 {
-    "P_left": {
-        "active": 1,
+    "ДавЛевНас": {
+        "active": 0,
         "color": "#990002",
         "max": 450,
         "smooth": 20,
         "trend": "Давление левого насоса"
     },
-    "P_right": {
-        "active": 1,
+    "ДавПравНас": {
+        "active": 0,
         "color": "#ff7f7e",
         "max": 300,
         "smooth": 10,
         "trend": "Давление правого насоса"
     },
-    "P_pipe": {
+    "ДавВыход": {
         "active": 0,
         "color": "#fe0000",
         "max": 300,
         "smooth": 10,
         "trend": "Давление на выходе"
     },
-    "Q_left": {
+    "РасходЛевНас": {
         "active": 1,
         "color": "#3399fe",
         "max": 500,
         "smooth": 10,
         "trend": "Расход левого насоса"
     },
-    "Q_right": {
+    "РасходПравНас": {
         "active": 1,
         "color": "#98ccfe",
         "max": 500,
         "smooth": 10,
         "trend": "Расход правого насоса"
     },
-    "Q_pipe": {
+    "РасходВыход": {
         "active": 1,
         "color": "#0000FF",
         "max": 500,
         "smooth": 1,
         "trend": "Расход на выходе"
     },
-    "T_rec": {
+    "ТемпРецирк": {
         "active": 0,
         "color": "#fed700",
         "max": 500,
         "smooth": 5,
         "trend": "Температура рециркуляции"
     },
-    "P_rec": {
+    "ДавРецирк": {
         "active": 0,
         "color": "#7fcc7e",
         "max": 500,
         "smooth": 5,
         "trend": "Плотность рециркуляции"
     },
-    "V_pipe": {
+    "ОбъемВыход": {
         "active": 0,
         "color": "#000000",
         "max": 500,
         "smooth": 10,
         "trend": "Объем на выходе"
     },
-    "Qw": {
+    "РасходВоды": {
         "active": 0,
         "color": "#ff6600",
         "max": 500,
         "smooth": 10,
         "trend": "Расход воды"
     },
-    "Plm": {
+    "Плотность": {
         "active": 0,
         "color": "#009900",
         "max": 500,

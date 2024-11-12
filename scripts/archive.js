@@ -245,16 +245,16 @@ function handleSelectedFile(event, path) {
                     };
 
                     // Добавление наборов данных
-                    addDataset('ДавлениеЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
-                    addDataset('ДавлениеПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
-                    addDataset('Давление на выходе', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
+                    addDataset('ДавЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
+                    addDataset('ДавПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
+                    addDataset('ДавВыход', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
                     addDataset('РасходЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
                     addDataset('РасходПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
-                    addDataset('Расход на выходе', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
-                    addDataset('Температура Рециркуляции', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
-                    addDataset('Давление Рециркуляции', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
-                    addDataset('Объем на выходе', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
-                    addDataset('Расход Воды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
+                    addDataset('РасходВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
+                    addDataset('ТемпРецирк', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
+                    addDataset('ДавРецирк', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
+                    addDataset('ОбъемВыход', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
+                    addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
                     // Заполнение <select> названиями графиков

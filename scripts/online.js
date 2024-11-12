@@ -89,17 +89,17 @@ async function readModbusData(client, address) {
 // Функция для обновления графика с данными Modbus 
 async function updateChartWithModbusData(chart, client) {
     const dataMap = {
-        'P_left': await readModbusData(client, 500),
-        'P_right': await readModbusData(client, 502),
-        'P_pipe': await readModbusData(client, 504),
-        'Q_left': await readModbusData(client, 506),
-        'Q_right': await readModbusData(client, 508),
-        'Q_pipe': await readModbusData(client, 510),
-        'T_rec': await readModbusData(client, 512),
-        'P_rec': await readModbusData(client, 514),
-        'V_pipe': await readModbusData(client, 516),
-        'Qw': await readModbusData(client, 518),
-        'Plm': await readModbusData(client, 520),
+        'ДавЛевНас': await readModbusData(client, 500),
+        'ДавПравНас': await readModbusData(client, 502),
+        'ДавВыход': await readModbusData(client, 504),
+        'РасходЛевНас': await readModbusData(client, 506),
+        'РасходПравНас': await readModbusData(client, 508),
+        'РасходВыход': await readModbusData(client, 510),
+        'ТемпРецирк': await readModbusData(client, 512),
+        'ДавРецирк': await readModbusData(client, 514),
+        'ОбъемВыход': await readModbusData(client, 516),
+        'РасходВоды': await readModbusData(client, 518),
+        'Плотность': await readModbusData(client, 520),
     };
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
@@ -141,6 +141,9 @@ function createYAxis(chart, chartName) {
             display: false,
             text: chartName,
             color: chartConfig[chartName].color,
+        },
+        grid: {
+            display: false
         }
     };
 }
@@ -202,14 +205,52 @@ document.addEventListener('DOMContentLoaded', () => {
             maintainAspectRatio: false,
             elements: {
                 point: {
-                    radius: 1
+                    radius: 0
                 }
             },
             scales: {}
+        },
+        grid: {
+            display: false
         }
+
     });
-    document.getElementById('startButton').addEventListener('click', startChart);
+
+    // Disable the start button initially
+    const startButton = document.getElementById('startButton');
+    startButton.disabled = true;
+
+    // Add event listeners to input fields to check if they are filled
+    const inputFields = ['client', 'bush', 'well', 'name_work'];
+    inputFields.forEach(field => {
+        document.getElementById(field).addEventListener('input', checkFields);
+    });
+
+    // Add event listener for the start button
+    startButton.addEventListener('click', startChart);
 });
+
+// Function to check if all required fields are filled
+function checkFields() {
+    const client = document.getElementById('client').value;
+    const bush = document.getElementById('bush').value;
+    const well = document.getElementById('well').value;
+    const nameWork = document.getElementById('name_work').value;
+
+    const startButton = document.getElementById('startButton');
+    const messageElement = document.getElementById('message'); // Get the message element
+
+    // Enable or disable the start button based on field values
+    if (client && bush && well && nameWork) {
+        startButton.disabled = false;
+        messageElement.style.display = 'none'; // Hide the message if all fields are filled
+    } else {
+        startButton.disabled = true;
+        messageElement.textContent = 'Пожалуйста, заполните все поля перед началом.';
+        messageElement.style.color = 'red';
+        messageElement.style.display = 'inline'; // Show the message
+    }
+}
 
 // Функция для преобразования данных в формат CSV
 function convertInputsToCSV() {
@@ -233,7 +274,7 @@ function convertInputsToCSV() {
     // Создаем массив строк CSV
     const csvData = [
         ['Заказчик', 'Куст', 'Скважина', 'Название работы', 'Дата'],
-        [client, bush, well, nameWork, formattedDate]
+                [client, bush, well, nameWork, formattedDate]
     ];
     
     return csvData.map(row => row.join(',')).join('\n');
@@ -245,7 +286,7 @@ async function saveChartDataToCSV() {
     
     if (!csvData) {
         const messageElement = document.getElementById('message');
-        messageElement.textContent = 'Не все поля заполнены, файл не создан.';
+        messageElement.textContent = 'Пожалуйста, заполните все поля перед началом.';
         messageElement.style.color = 'red';
         messageElement.style.display = 'inline';
         return;
@@ -255,7 +296,6 @@ async function saveChartDataToCSV() {
         const userSelectedPath = await ipcRenderer.invoke('show-save-dialog');
         if (userSelectedPath) {
             csvFilePath = userSelectedPath;
-            console.log('Путь к файлу установлен:', csvFilePath);
         }
 
         // Сохраняем данные в csvFilePath
@@ -271,8 +311,6 @@ async function saveChartDataToCSV() {
         messageElement.style.display = 'inline';
     }
 }
-
-
 // Функция для записи данных в CSV
 async function writeDataToCSV(dataToWrite) {
     try {
@@ -330,10 +368,6 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         messageElement.style.color = 'green';
         messageElement.style.display = 'inline';
 
-        // Добавляем таймер для скрытия сообщения через 5 секунд
-        setTimeout(() => {
-            messageElement.style.display = 'none';
-        }, 50000);
     }
 });
 

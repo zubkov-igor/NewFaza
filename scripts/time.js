@@ -6,7 +6,7 @@ function generateCSV() {
     startTime.setHours(18, 30, 0); // начало интервала
 
     const endTime = new Date();
-    endTime.setHours(22, 40, 0); // Устанавливаем конец интервала
+    endTime.setHours(21, 30, 0); // Устанавливаем конец интервала
 
     const timeArray = [];
     let currentTime = startTime;
