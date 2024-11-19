@@ -447,29 +447,60 @@ div.blueTable {
 }
 
 .footer__container {
-    width: 1450px;
-    
+    width: 1450px;    
 }
 
 .form-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap; 
-    padding: 10px;
+    padding: 0 10px;
     background-color: var(--color-light);
     border: 2px solid var(--color-sky);
     border-radius: 8px;
 }
 
+.form-row {
+    display: flex; 
+    gap: 10px; 
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
 .form-group {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
-.form-group:last-child {
-    margin-right: 0;
+.row-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
+
+select {
+  height: 35px;
+  padding: 0 5px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+}
+
+.vline {
+  width: 1px;
+  height: 35px; /* Update height to match input height */
+  border: 2px solid var(--color-sky);
+  margin: 0 10px; /* Add some margin to separate from inputs */
+}
+
+.button-group {
+    display: flex; 
+    align-items: flex-end;
+    margin-top: 15px;
+}
+
 .form-input {
     border: 1px solid var(--color-border);
     border-radius: 5px; 
@@ -479,8 +510,15 @@ div.blueTable {
     padding: 5px 10px; 
     border: 1px solid var(--color-border);
     border-radius: 5px; 
-    height: 40px; 
+    height: 40px;
+    align-self: center;
     cursor: pointer;
+}
+
+.vline {
+    width: 1px;
+    height: 40px;
+    border: 2px solid var(--color-sky);
 }
 
 label {
@@ -489,15 +527,16 @@ label {
 }
 
 input {
-  height: 35px;
-  padding: 0 5px;
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
+    height: 35px;
+    padding: 0 5px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
 }
 
 input[type="number"] {
-  width: 100px;
+    width: 100px;
 }
+
 input[type="text"] {
-  width: 350px;
+    width: 350px;
 }

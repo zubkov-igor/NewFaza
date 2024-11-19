@@ -448,7 +448,7 @@ function handleSelectedFile(event, path) {
                         plugins: [annotationPlugin, dragDataPlugin]
                     });
 
-
+                    enablePointSelection();
                     // Функция для включения выбора точек на графике
                     function enablePointSelection() {
                         const canvas = document.getElementById('archive');
