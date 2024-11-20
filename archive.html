@@ -40,26 +40,33 @@
                     </div>
                 </div>
         </main>
-<footer class="footer">
-    <div id="hidden">
-        <div class="footer__container">
-            <div class="form-container">
-                <div class="form-row">
-                    <div class="row-group">
-                          <div id="message"></div>
-                        <select id="chartSelect">
-                            <option value="">Выберите график</option>
-                        </select>
-                        <input type="number" id="value1" pattern="\d*" min="0" required placeholder="Значение 1">
-                        <input type="number" id="value2" pattern="\d*" min="0" required placeholder="Значение 2">
-                        <button class="block-item_button" id="updateValues" disabled>Обновить</button>
-                        <div class="vline"></div>
+        <footer class="footer">
+            <div id="hidden">
+                <div class="footer__container">
+                    <div class="form-container">
+                        <div class="form-row">
+                            <div class="row-group">
+                                <div id="message"></div>
+                                <select id="chartSelect">
+                                    <option value="">Выберите график</option>
+                                </select>
+                                <input type="number" id="value1" pattern="\d*" min="0" required placeholder="Значение 1">
+                                <input type="number" id="value2" pattern="\d*" min="0" required placeholder="Значение 2">
+                                <button class="block-item_button" id="updateValues" disabled>Обновить</button>
+                                <div class="vline"></div>
+                                    <form id="editForm">
+        <input type="text" id="client" name="client" value="">
+        <input type="number" id="bush" name="bush" value="">
+        <input type="number" id="well" name="well" value="">
+        <input type="text" id="work" name="work" value="">
+        <button class="block-item_button" type="submit">Сохранить</button>
+    </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</footer>
+        </footer>
     </div>
     <script>
         function validateInput(inputField) {

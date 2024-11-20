@@ -1,11 +1,8 @@
-const {
-    ipcRenderer
-} = require('electron');
-const {
-    Readable
-} = require('stream');
+const { ipcRenderer } = require('electron');
+const { Readable } = require('stream');
 const chartjs = require('chart.js');
 const fastcsv = require('fast-csv');
+
 const {
     Chart,
     LinearScale,
@@ -35,7 +32,6 @@ function handleOpenCsvClick() {
 document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick);
 ipcRenderer.on('selected-file', handleSelectedFile);
 document.getElementById('save').addEventListener('click', saveChartAsPNG);
-
 
 // Функция для сохранения графика как PNG
 function saveChartAsPNG() {
@@ -69,7 +65,6 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на корректность вводимых значений
     if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
         alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
-        // Не выходим из функции, чтобы разрешить ввод новых значений
         return;
     }
 
@@ -79,109 +74,77 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Удаляем промежуточные точки на всех графиках
     archiveChart.data.datasets.forEach((dataset) => {
         dataset.data.splice(startIndex + 1, endIndex - startIndex - 1);
-        // Обновляем значения выбранных точек
-        dataset.data[startIndex] = newValue1; // Присваиваем новое значение
-        dataset.data[startIndex + 1] = newValue2; // Присваиваем новое значение
+        dataset.data[startIndex] = newValue1; 
+        dataset.data[startIndex + 1] = newValue2; 
     });
 
-    // Сбросить выбранные точки
     selectedPoints = [];
-    activePoints.clear(); // Очищаем активные точки
-    document.getElementById('updateValues').disabled = true; // Отключаем кнопку обновления
+    activePoints.clear();
+    document.getElementById('updateValues').disabled = true;
 
-    // Обновляем график
     archiveChart.update();
-
-    // Сброс состояния активных точек
-    updatePointStyles(); // Обновляем стили точек
-
-    // Очищаем поля ввода
+    updatePointStyles();
     document.getElementById('value1').value = '';
     document.getElementById('value2').value = '';
-
-    // Разрешаем повторный выбор точек
     enablePointSelection();
 });
 
 // Функция для включения выбора точек
 function enablePointSelection() {
-    // Удаляем старый обработчик, если он существует
     const archiveElement = document.getElementById('archive');
     const oldHandler = pointSelectionHandler;
-    archiveElement.removeEventListener('click', oldHandler); // Удаляем предыдущий обработчик
-
-    // Добавляем новый обработчик для выбора точек
+    archiveElement.removeEventListener('click', oldHandler);
     archiveElement.addEventListener('click', pointSelectionHandler);
 }
 
-
 // Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
-    const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
-        intersect: true
-    }, true);
+    const points = archiveChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
 
     if (points.length) {
         const index = points[0].index;
-
-        // Получаем значение времени по оси X
         const timeValue = archiveChart.data.labels[index];
 
-        // Обновляем сообщение с временем
         const messageElement = document.getElementById('message');
         messageElement.innerText = `Выбрано время: ${timeValue}`;
 
-        // Проверьте, включена ли точка
         if (activePoints.has(index)) {
-            activePoints.delete(index); // Отменить выделение пункта
+            activePoints.delete(index);
         } else {
-            // Если выбраны менее 2 точек, добавить новую точку
             if (activePoints.size < 2) {
-                activePoints.add(index); // Select the point
+                activePoints.add(index);
             } else {
-                // Replace alert with dialog
-                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки."); // Show dialog
-                // Reset selection
-                activePoints.clear(); // Clear active points
-                selectedPoints = []; // Reset selected points
-                document.getElementById('updateValues').disabled = true; // Disable update button
-                // Continue execution
+                ipcRenderer.send('show-alert', "Вы можете выбрать только 2 точки.");
+                activePoints.clear();
+                selectedPoints = [];
+                document.getElementById('updateValues').disabled = true;
             }
         }
 
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
-
-        // Update chart to reflect changes
         updatePointStyles();
     }
 }
 
 // Функция для обновления стилей точек
 function updatePointStyles() {
-    // Обновляем данные графика для изменения цвета точек
     archiveChart.data.datasets.forEach((dataset) => {
         dataset.pointBackgroundColor = dataset.data.map((_, index) => {
             return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
         });
     });
 
-    // Обновляем график
     archiveChart.update();
 
-    // Отображаем сообщение о выбранных точках
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
-        // Получаем значения времени по выбранным точкам
         const timeValues = selectedPoints.map(index => archiveChart.data.labels[index]);
-
         messageElement.innerText = `Выбран интервал: ${timeValues[0]} - ${timeValues[1]}`;
     } else {
         messageElement.innerText = '';
     }
 }
-
-/*---------------------------------------------------------------------------*/
 
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
@@ -190,7 +153,7 @@ document.body.appendChild(messageElement);
 
 let clientInfo = "";
 let headers = ["Client", "Bush", "Well", "Work", "Data"]; 
-let clientDataExtracted = false; // Флаг для отслеживания, были ли извлечены данные о клиенте
+let clientDataExtracted = false;
 
 const clientInfoPlugin = {
     id: 'clientInfoPlugin',
@@ -205,16 +168,44 @@ const clientInfoPlugin = {
         let y = 30;
         if (clientInfo) {
             const clientInfoArray = clientInfo.split('. ');
-            const clientInfoWithValues = clientInfoArray.join(', '); // Объединяем в строку
-
+            const clientInfoWithValues = clientInfoArray.join(', ');
             ctx.fillText(clientInfoWithValues, x, y);
         } else {
             ctx.fillText("Нет данных о клиенте", x, y);
         }
-
         ctx.restore();
     }
 };
+
+
+
+// Функция для открытия диалогового окна выбора файла
+function openFileDialog() {
+    ipcRenderer.send('open-file-dialog');
+}
+
+// Обработка выбранного файла
+ipcRenderer.on('selected-file', (event, filePath) => {
+    // Запрашиваем загрузку данных из выбранного файла
+    ipcRenderer.send('load-data', filePath);
+});
+
+// Получаем данные после их загрузки
+ipcRenderer.on('data-loaded', (event, rows) => {
+    if (rows.length > 0) {
+        // Предполагаем, что мы хотим загрузить данные из первой строки
+        const data = rows[0]; // Или выберите нужную строку
+
+        // Заполняем поля формы
+        document.getElementById('client').value = data.Client || ''; 
+        document.getElementById('bush').value = data.Bush || '';
+        document.getElementById('well').value = data.Well || '';
+        document.getElementById('work').value = data.Work || '';
+    }
+});
+
+
+
 
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
@@ -229,7 +220,7 @@ function handleSelectedFile(event, path) {
     }
 
     const formattedData = [];
-    const chartLabels = new Set(); // Объявляем chartLabels здесь
+    const chartLabels = new Set();
 
     fetch(path)
         .then(response => {
@@ -246,15 +237,12 @@ function handleSelectedFile(event, path) {
 
             const stream = Readable.from([data]);
             stream
-                .pipe(fastcsv.parse({
-                    headers: true
-                }))
+                .pipe(fastcsv.parse({ headers: true }))
                 .on('data', (row) => {
                     if (!clientDataExtracted) {
-                        // Извлекаем данные для clientInfo из первой строки
                         clientInfo = `Заказчик: ${row['Client']}. Куст: ${row['Bush']}. Скважина: ${row['Well']}. Работа: ${row['Work']}. Дата: ${row['Data']}`;
-                        clientDataExtracted = true; // Устанавливаем флаг, что данные о клиенте извлечены
-                    } else if (row.Time) { // Проверяем, есть ли значение Time
+                        clientDataExtracted = true;
+                    } else if (row.Time) {
                         formattedData.push({
                             Time: row.Time,
                             P_left: row.ДавЛевНас ? parseFloat(row.ДавЛевНас) : null,
@@ -270,7 +258,6 @@ function handleSelectedFile(event, path) {
                             Plm: row.Плотность ? parseFloat(row.Плотность) : null
                         });
 
-                        // Добавляем заголовки графиков в Set, пропуская первые 6 заголовков
                         const headersToSkip = ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'];
                         Object.keys(row).forEach(key => {
                             if (!headersToSkip.includes(key) && row[key] !== undefined && row[key] !== null) {
@@ -293,9 +280,8 @@ function handleSelectedFile(event, path) {
                         });
                     });
 
-                    // Заполнение <select> заголовками графиков
                     const chartSelect = document.getElementById('chartSelect');
-                    chartSelect.innerHTML = ''; // Очищаем предыдущие значения
+                    chartSelect.innerHTML = '';
                     chartLabels.forEach(label => {
                         const option = document.createElement('option');
                         option.value = label;
@@ -362,13 +348,12 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-                    // Создание графика после обработки данных
                     archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: time,
                             datasets: datasets.map(dataset => ({
-                            ...dataset,
+                                ...dataset,
                                 dragData: true, 
                                 dragX: true,   
                                 dragY: true
@@ -412,10 +397,8 @@ function handleSelectedFile(event, path) {
                             dragData: {
                                 round: 2,
                                 showTooltip: false,
-                                onDragStart: function(event, datasetIndex,index, value){
-                                },
-                                onDrag: function(event, datasetIndex, index, value) { 
-                                },
+                                onDragStart: function(event, datasetIndex,index, value){},
+                                onDrag: function(event, datasetIndex, index, value) {},
                                 onDragEnd: function(event, datasetIndex, index, value) {
                                     datasets[datasetIndex].data[index] = value;
                                     archiveChart.update();
@@ -449,19 +432,12 @@ function handleSelectedFile(event, path) {
                     });
 
                     enablePointSelection();
-                    // Функция для включения выбора точек на графике
+
+                    // Инициализация выбора точек после загрузки графика
                     function enablePointSelection() {
                         const canvas = document.getElementById('archive');
                         canvas.addEventListener('click', pointSelectionHandler);
                     }
-
-                    // Инициализация выбора точек после загрузки графика
-                    function init() {
-                        document.getElementById('chartSelect').dispatchEvent(new Event('change'));
-                    }
-
-                    // Запуск инициализации
-                    init();
 
                     // Обработчик события для закрытия окна приложения
                     window.addEventListener('beforeunload', () => {
@@ -469,6 +445,19 @@ function handleSelectedFile(event, path) {
                             archiveChart.destroy();
                             archiveChart = null;
                         }
+                    });
+
+                    // Обработчик отправки формы для обновления данных клиента
+                    document.getElementById('editForm').addEventListener('submit', (event) => {
+                        event.preventDefault();
+
+                        const client = document.getElementById('client').value;
+                        const bush = document.getElementById('bush').value;
+                        const well = document.getElementById('well').value;
+                        const work = document.getElementById('work').value;
+
+                        // Отправляем данные в основной процесс
+                        ipcRenderer.send('save-data', { client, bush, well, work });
                     });
                 });
         });

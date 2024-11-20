@@ -3,6 +3,7 @@ const ModbusRTU = require('modbus-serial');
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
+const fastcsv = require('fast-csv');
 
 let mainWindow;
 
@@ -176,4 +177,65 @@ if (!gotTheLock) {
             });
         });
     });
+
+ipcMain.on('save-data', (event, { filePath, newData }) => {
+    // Проверяем, существует ли файл
+    if (!fs.existsSync(filePath)) {
+        console.error('CSV файл не найден:', filePath);
+        return;
+    }
+
+    const rows = [];
+    fs.createReadStream(filePath)
+        .pipe(fastcsv.parse({ headers: true }))
+        .on('data', (row) => {
+            // Проверяем, совпадает ли Client с данными, которые мы хотим обновить
+            if (row.Client === newData.client) {
+                // Заменяем старые данные на новые
+                rows.push({
+                    Client: newData.client,
+                    Bush: newData.bush,
+                    Well: newData.well,
+                    Work: newData.work,
+                    Data: row.Data, // Сохраняем остальные поля, если они есть
+                });
+            } else {
+                rows.push(row);
+            }
+        })
+        .on('end', () => {
+            // Записываем обновленные данные обратно в CSV
+            const csvStream = fastcsv.format({ headers: true });
+            const writableStream = fs.createWriteStream(filePath);
+
+            writableStream.on('finish', () => {
+                console.log('CSV файл успешно обновлен.');
+            });
+
+            csvStream.pipe(writableStream);
+            rows.forEach((row) => csvStream.write(row));
+            csvStream.end();
+        })
+        .on('error', (error) => {
+            console.error('Ошибка при чтении CSV файла:', error);
+        });
+});
+ipcMain.on('load-data', (event, filePath) => {
+    const rows = [];
+
+    fs.createReadStream(filePath)
+        .pipe(fastcsv.parse({ headers: true }))
+        .on('data', (row) => {
+            rows.push(row);
+        })
+        .on('end', () => {
+            // Отправляем данные обратно в рендерер
+            event.sender.send('data-loaded', rows);
+        })
+        .on('error', (error) => {
+            console.error('Ошибка при чтении CSV файла:', error);
+        });
+});
+
+
 }
