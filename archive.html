@@ -50,19 +50,30 @@
                                 <select id="chartSelect">
                                     <option value="">Выберите график</option>
                                 </select>
-                                <input type="number" id="value1" pattern="\d*" min="0" required placeholder="Значение 1">
-                                <input type="number" id="value2" pattern="\d*" min="0" required placeholder="Значение 2">
+                                <input type="number" id="value1" pattern="\d*" min="0" required>
+                                <input type="number" id="value2" pattern="\d*" min="0" required>
                                 <button class="block-item_button" id="updateValues" disabled>Обновить</button>
                                 <div class="vline"></div>
-                                    <form id="editForm">
-        <input type="text" id="client" name="client" value="">
-        <input type="number" id="bush" name="bush" value="">
-        <input type="number" id="well" name="well" value="">
-        <input type="text" id="work" name="work" value="">
-        <button class="block-item_button" type="submit">Сохранить</button>
-    </form>
+                            </div>
+                            <div class="form-row">
+                                <form id="editForm">
+                                    <div class="form-group">
+                                        <input type="text" id="client" name="client" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="number" id="bush" name="bush" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="number" id="well" name="well" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" id="work" name="work" value="">
+                                    </div>
+                                    <button class="block-item_button" type="submit">Сохранить</button>
+                                </form>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>

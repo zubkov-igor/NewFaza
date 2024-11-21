@@ -546,6 +546,12 @@ select {
     border: 2px solid var(--color-sky);
 }
 
+#editForm {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
 
 label {
     margin-bottom: 1px;
@@ -561,7 +567,7 @@ input {
 }
 
 input[type="number"] {
-    max-width: 90px;
+    max-width: 60px;
 }
 
 input[type="text"] {

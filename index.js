@@ -178,10 +178,20 @@ if (!gotTheLock) {
         });
     });
 
+/*-----------------------------------------------------------------------------*/    
+
 ipcMain.on('save-data', (event, { filePath, newData }) => {
+    // Проверка на наличие данных
+    if (!newData || !newData.client || !newData.bush || !newData.well || !newData.work) {
+        console.error('Данные не были переданы или имеют неверный формат:', newData);
+        event.reply('save-data-response', { success: false, error: 'Данные не были переданы или имеют неверный формат.' });
+        return;
+    }
+
     // Проверяем, существует ли файл
     if (!fs.existsSync(filePath)) {
         console.error('CSV файл не найден:', filePath);
+        event.reply('save-data-response', { success: false, error: 'CSV файл не найден.' });
         return;
     }
 
@@ -189,37 +199,55 @@ ipcMain.on('save-data', (event, { filePath, newData }) => {
     fs.createReadStream(filePath)
         .pipe(fastcsv.parse({ headers: true }))
         .on('data', (row) => {
+            console.log('Читаем строку:', row); // Отладочный вывод
+
             // Проверяем, совпадает ли Client с данными, которые мы хотим обновить
             if (row.Client === newData.client) {
-                // Заменяем старые данные на новые
-                rows.push({
-                    Client: newData.client,
-                    Bush: newData.bush,
-                    Well: newData.well,
-                    Work: newData.work,
-                    Data: row.Data, // Сохраняем остальные поля, если они есть
-                });
+                console.log('Обновляем данные для клиента:', newData.client); // Отладочный вывод
+                // Обновляем поля
+                row.Bush = newData.bush;     // Обновляем Bush
+                row.Well = newData.well;     // Обновляем Well
+                row.Work = newData.work;     // Обновляем Work
             } else {
-                rows.push(row);
+                console.log('Данные для клиента не совпадают, оставляем без изменений:', row.Client);
             }
+
+            // Сохраняем обновленную или неизмененную строку
+            rows.push(row);
         })
         .on('end', () => {
+            console.log('Обновленные строки:', rows); // Отладочный вывод
+
             // Записываем обновленные данные обратно в CSV
             const csvStream = fastcsv.format({ headers: true });
             const writableStream = fs.createWriteStream(filePath);
 
             writableStream.on('finish', () => {
                 console.log('CSV файл успешно обновлен.');
+                event.reply('save-data-response', { success: true });
             });
 
+            writableStream.on('error', (error) => {
+                console.error('Ошибка при записи в CSV файл:', error);
+                event.reply('save-data-response', { success: false, error: error.message });
+            });
+
+            // Пайпим данные в поток записи
             csvStream.pipe(writableStream);
-            rows.forEach((row) => csvStream.write(row));
+            rows.forEach((row) => {
+                console.log('Записываем строку:', row); // Отладочный вывод
+                csvStream.write(row);
+            });
             csvStream.end();
         })
         .on('error', (error) => {
             console.error('Ошибка при чтении CSV файла:', error);
+            event.reply('save-data-response', { success: false, error: error.message });
         });
 });
+
+/*------------------------------------------------------------------------*/
+
 ipcMain.on('load-data', (event, filePath) => {
     const rows = [];
 

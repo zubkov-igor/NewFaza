@@ -151,6 +151,32 @@ const messageElement = document.createElement('div');
 messageElement.id = 'message';
 document.body.appendChild(messageElement);
 
+
+// Функция для открытия диалогового окна выбора файла
+function openFileDialog() {
+    ipcRenderer.send('open-file-dialog');
+}
+
+// Обработка выбранного файла
+ipcRenderer.on('selected-file', (event, filePath) => {
+    // Запрашиваем загрузку данных из выбранного файла
+    ipcRenderer.send('load-data', filePath);
+});
+
+// Получаем данные после их загрузки
+ipcRenderer.on('data-loaded', (event, rows) => {
+    if (rows.length > 0) {
+        const data = rows[0];
+
+        // Заполняем поля формы
+        document.getElementById('client').value = data.Client || ''; 
+        document.getElementById('bush').value = data.Bush || '';
+        document.getElementById('well').value = data.Well || '';
+        document.getElementById('work').value = data.Work || '';
+    }
+});
+
+
 let clientInfo = "";
 let headers = ["Client", "Bush", "Well", "Work", "Data"]; 
 let clientDataExtracted = false;
@@ -176,36 +202,6 @@ const clientInfoPlugin = {
         ctx.restore();
     }
 };
-
-
-
-// Функция для открытия диалогового окна выбора файла
-function openFileDialog() {
-    ipcRenderer.send('open-file-dialog');
-}
-
-// Обработка выбранного файла
-ipcRenderer.on('selected-file', (event, filePath) => {
-    // Запрашиваем загрузку данных из выбранного файла
-    ipcRenderer.send('load-data', filePath);
-});
-
-// Получаем данные после их загрузки
-ipcRenderer.on('data-loaded', (event, rows) => {
-    if (rows.length > 0) {
-        // Предполагаем, что мы хотим загрузить данные из первой строки
-        const data = rows[0]; // Или выберите нужную строку
-
-        // Заполняем поля формы
-        document.getElementById('client').value = data.Client || ''; 
-        document.getElementById('bush').value = data.Bush || '';
-        document.getElementById('well').value = data.Well || '';
-        document.getElementById('work').value = data.Work || '';
-    }
-});
-
-
-
 
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
@@ -447,18 +443,29 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-                    // Обработчик отправки формы для обновления данных клиента
-                    document.getElementById('editForm').addEventListener('submit', (event) => {
-                        event.preventDefault();
+    document.getElementById('editForm').addEventListener('submit', (event) => {
+    event.preventDefault();
 
-                        const client = document.getElementById('client').value;
-                        const bush = document.getElementById('bush').value;
-                        const well = document.getElementById('well').value;
-                        const work = document.getElementById('work').value;
+    const client = document.getElementById('client').value;
+    const bush = document.getElementById('bush').value;
+    const well = document.getElementById('well').value;
+    const work = document.getElementById('work').value;
 
-                        // Отправляем данные в основной процесс
-                        ipcRenderer.send('save-data', { client, bush, well, work });
-                    });
+    // Укажите путь к файлу CSV
+    const filePath = 'c:/NewFaza/files/ql22.csv';
+
+    // Отправляем данные в основной процесс
+    ipcRenderer.send('save-data', { filePath, newData: { client, bush, well, work } });
+});
+
+// Обработка ответа от основного процесса
+ipcRenderer.on('save-data-response', (event, { success, error }) => {
+    if (success) {
+        alert('Данные успешно сохранены!');
+    } else {
+        alert(`Ошибка: ${error}`);
+    }
+});
                 });
         });
 }
