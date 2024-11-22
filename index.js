@@ -189,7 +189,7 @@ ipcMain.on('save-data', (event, { filePath, newData }) => {
         return;
     }
 
-    const rows = [];
+    const rows = []; // Массив для хранения обновленных строк
     let rowIndex = 0; // Индекс текущей строки
     fs.createReadStream(filePath)
         .pipe(fastcsv.parse({ headers: true }))

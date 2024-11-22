@@ -173,6 +173,14 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         document.getElementById('bush').value = data.Bush || '';
         document.getElementById('well').value = data.Well || '';
         document.getElementById('work').value = data.Work || '';
+
+        // Обновляем clientInfo
+        clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}.`;
+        
+        // Обновляем график
+        if (archiveChart) {
+            archiveChart.update(); // Обновляем график, чтобы отобразить новые данные
+        }
     }
 });
 
@@ -443,7 +451,9 @@ function handleSelectedFile(event, path) {
                         }
                     });
 
-    document.getElementById('editForm').addEventListener('submit', (event) => {
+/*----------------------------------------------------------------------------------------*/
+
+document.getElementById('editForm').addEventListener('submit', (event) => {
     event.preventDefault();
 
     const client = document.getElementById('client').value;
@@ -462,10 +472,29 @@ function handleSelectedFile(event, path) {
 ipcRenderer.on('save-data-response', (event, { success, error }) => {
     if (success) {
         alert('Данные успешно сохранены!');
+        savedSuccessfully = true;
+        
+        // Обновляем clientInfo и отображаем его на графике
+        const client = document.getElementById('client').value;
+        const bush = document.getElementById('bush').value;
+        const well = document.getElementById('well').value;
+        const work = document.getElementById('work').value;
+
+        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}.`;
+        
+        // Обновляем график
+        if (archiveChart) {
+            archiveChart.update(); // Обновляем график
+        }
     } else {
         alert(`Ошибка: ${error}`);
     }
 });
+
+/*----------------------------------------------------------------------------*/
+
+
+
                 });
         });
 }
