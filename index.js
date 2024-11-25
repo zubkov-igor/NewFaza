@@ -218,7 +218,8 @@ ipcMain.on('save-data', (event, { filePath, newData }) => {
 
             writableStream.on('finish', () => {
                 console.log('CSV файл успешно обновлен.');
-                event.reply('save-data-response', { success: true });
+                // Отправляем успешный ответ с обновленной информацией
+                event.reply('save-data-response', { success: true, clientInfo: newData });
             });
 
             writableStream.on('error', (error) => {
@@ -230,7 +231,7 @@ ipcMain.on('save-data', (event, { filePath, newData }) => {
             csvStream.pipe(writableStream);
             rows.forEach((row) => {
                 console.log('Записываем строку:', row); // Отладочный вывод
-                csvStream.write(row);
+                csvStream.write(row); // Записываем строку
             });
             csvStream.end(); // Убедитесь, что вы вызываете end() для завершения записи
         })
