@@ -24,6 +24,7 @@ let archiveChart;
 let selectedPoints = [];
 const activePoints = new Set();
 let currentChartId = null;
+let selectedFilePath = '';
 
 function handleOpenCsvClick() {
     ipcRenderer.send('open-file-dialog');
@@ -71,11 +72,15 @@ document.getElementById('updateValues').addEventListener('click', () => {
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
 
-    // Удаляем промежуточные точки на всех графиках
+    // Генерируем случайные значения для промежуточных точек
     archiveChart.data.datasets.forEach((dataset) => {
-        dataset.data.splice(startIndex + 1, endIndex - startIndex - 1);
+        for (let i = startIndex + 1; i < endIndex; i++) {
+            // Генерируем случайное значение между newValue1 и newValue2
+            const randomValue = Math.random() * (newValue2 - newValue1) + newValue1;
+            dataset.data[i] = randomValue; // Устанавливаем случайное значение
+        }
         dataset.data[startIndex] = newValue1; 
-        dataset.data[startIndex + 1] = newValue2; 
+        dataset.data[endIndex] = newValue2; 
     });
 
     selectedPoints = [];
@@ -147,25 +152,6 @@ function updatePointStyles() {
     }
 }
 
-// Функция для обновления стилей точек
-function updatePointStyles() {
-    archiveChart.data.datasets.forEach((dataset) => {
-        dataset.pointBackgroundColor = dataset.data.map((_, index) => {
-            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
-        });
-    });
-
-    archiveChart.update();
-
-    const messageElement = document.getElementById('message');
-    if (selectedPoints.length === 2) {
-        const timeValues = selectedPoints.map(index => archiveChart.data.labels[index]);
-        messageElement.innerText = `Выбран интервал: ${timeValues[0]} - ${timeValues[1]}`;
-    } else {
-        messageElement.innerText = '';
-    }
-}
-
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
@@ -199,7 +185,7 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         
         // Обновляем график
         if (archiveChart) {
-            archiveChart.update(); // Обновляем график, чтобы отобразить новые данные
+            archiveChart.update();
         }
     }
 });
@@ -237,6 +223,8 @@ Chart.register(clientInfoPlugin);
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
     filePathElement.innerText = `файл: ${path}`;
+
+     selectedFilePath = path;
 
     if (archiveChart) {
         archiveChart.destroy();
@@ -445,7 +433,7 @@ function handleSelectedFile(event, path) {
                             scales: scales,
                             elements: {
                                 point: {
-                                    radius: 0
+                                    radius: 2
                                 }
                             },
                             annotation: {
@@ -463,13 +451,6 @@ function handleSelectedFile(event, path) {
                         canvas.addEventListener('click', pointSelectionHandler);
                     }
 
-                    // Обработчик события для закрытия окна приложения
-                    window.addEventListener('beforeunload', () => {
-                        if (archiveChart) {
-                            archiveChart.destroy();
-                            archiveChart = null;
-                        }
-                    });
 
 /*----------------------------------------------------------------------------------------*/
 
@@ -482,7 +463,7 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     const work = document.getElementById('work').value;
 
     // Укажите путь к файлу CSV
-    const filePath = 'c:/NewFaza/files/ql22.csv';
+    const filePath = selectedFilePath;
 
     // Отправляем данные в основной процесс
     ipcRenderer.send('save-data', { filePath, newData: { client, bush, well, work } });
