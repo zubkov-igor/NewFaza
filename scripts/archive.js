@@ -108,6 +108,7 @@ function pointSelectionHandler(event) {
         const messageElement = document.getElementById('message');
         messageElement.innerText = `Выбрано время: ${timeValue}`;
 
+        // Добавляем или удаляем точку из выбранных
         if (activePoints.has(index)) {
             activePoints.delete(index);
         } else {
@@ -124,6 +125,25 @@ function pointSelectionHandler(event) {
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
         updatePointStyles();
+    }
+}
+
+// Функция для обновления стилей точек
+function updatePointStyles() {
+    archiveChart.data.datasets.forEach((dataset) => {
+        dataset.pointBackgroundColor = dataset.data.map((_, index) => {
+            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
+        });
+    });
+
+    archiveChart.update();
+
+    const messageElement = document.getElementById('message');
+    if (selectedPoints.length === 2) {
+        const timeValues = selectedPoints.map(index => archiveChart.data.labels[index]);
+        messageElement.innerText = `Выбран интервал: ${timeValues[0]} - ${timeValues[1]}`;
+    } else {
+        messageElement.innerText = '';
     }
 }
 
@@ -425,7 +445,7 @@ function handleSelectedFile(event, path) {
                             scales: scales,
                             elements: {
                                 point: {
-                                    radius: 1
+                                    radius: 0
                                 }
                             },
                             annotation: {

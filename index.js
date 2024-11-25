@@ -191,11 +191,11 @@ ipcMain.on('save-data', (event, { filePath, newData }) => {
 
     const rows = []; // Массив для хранения обновленных строк
     let rowIndex = 0; // Индекс текущей строки
+
+    // Чтение CSV файла
     fs.createReadStream(filePath)
         .pipe(fastcsv.parse({ headers: true }))
         .on('data', (row) => {
-            console.log('Читаем строку:', row); // Отладочный вывод
-
             // Обновляем первую строку после заголовков
             if (rowIndex === 0) { // Первая строка после заголовков (индекс 0)
                 row.Client = newData.client; // Обновляем Client
