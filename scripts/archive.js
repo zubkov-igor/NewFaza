@@ -34,6 +34,7 @@ document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick)
 ipcRenderer.on('selected-file', handleSelectedFile);
 document.getElementById('save').addEventListener('click', saveChartAsPNG);
 
+
 function saveChartAsPNG() {
     const chart = archiveChart;
     const canvas = chart.canvas;
@@ -50,7 +51,8 @@ function saveChartAsPNG() {
     a.download = 'chart.png';
     a.click();
 }
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
 
 // Обработчик клика для обновления значений точек
 document.getElementById('updateValues').addEventListener('click', () => {
@@ -63,11 +65,6 @@ document.getElementById('updateValues').addEventListener('click', () => {
         return; // Выход из функции, если выбрано не 2 точки
     }
 
-    // Проверка на корректность вводимых значений
-  //  if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
-    //    alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
-      //  return;
-  //  }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
@@ -152,13 +149,12 @@ function updatePointStyles() {
     }
 }
 
-/*----------------------------------------------------------------------------------*/
-
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
 document.body.appendChild(messageElement);
 
+/*-------------------------------------------------------------------------*/
 
 // Функция для открытия диалогового окна выбора файла
 function openFileDialog() {
@@ -170,8 +166,6 @@ ipcRenderer.on('selected-file', (event, filePath) => {
     // Запрашиваем загрузку данных из выбранного файла
     ipcRenderer.send('load-data', filePath);
 });
-
-/*-------------------------------------------------------------------------------*/
 
 // Получаем данные после их загрузки
 ipcRenderer.on('data-loaded', (event, rows) => {
@@ -193,7 +187,6 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         }
     }
 });
-
 
 let clientInfo = "";
 let headers = ["Client", "Bush", "Well", "Work", "Data"]; 
@@ -221,10 +214,48 @@ const clientInfoPlugin = {
     }
 };
 
+document.getElementById('editForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const client = document.getElementById('client').value;
+    const bush = document.getElementById('bush').value;
+    const well = document.getElementById('well').value;
+    const work = document.getElementById('work').value;
+
+    // Укажите путь к файлу CSV
+    const filePath = selectedFilePath;
+
+    // Отправляем данные в основной процесс
+    ipcRenderer.send('save-data', { filePath, newData: { client, bush, well, work } });
+});
+
+// Обработка ответа от основного процесса
+ipcRenderer.on('save-data-response', (event, { success, error }) => {
+    if (success) {
+        alert('Данные успешно сохранены!');
+        savedSuccessfully = true;
+        
+        // Получаем значения из формы
+        const client = document.getElementById('client').value;
+        const bush = document.getElementById('bush').value;
+        const well = document.getElementById('well').value;
+        const work = document.getElementById('work').value;
+
+        // Обновляем clientInfo
+        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}.`;
+
+        // Перерисовываем только текст clientInfo на канвасе
+        if (archiveChart) {
+            archiveChart.draw(); // Принудительно перерисовываем график, чтобы обновить текст
+        }
+    } else {
+        alert(`Ошибка: ${error}`);
+    }
+});
+
+
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
-
-/*-------------------------------------------------------------------*/
 
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
@@ -297,7 +328,7 @@ function handleSelectedFile(event, path) {
                             hour12: false
                         });
                     });
-
+  
                     const datasets = [];
                     const addDataset = (label, dataKey, color, yAxisID) => {
                         if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
@@ -334,7 +365,7 @@ datasets.forEach(dataset => {
             ticks: {
                 display: true,
                 position: 'left',
-                color: dataset.color
+                color: dataset.color // Устанавливаем цвет значений
             },
             title: {
                 display: false,
@@ -448,18 +479,17 @@ plugins: [
             const xAxis = chart.scales.x;
 
             if (!xAxis) {
-                console.warn('Ось X не найдена');
-                return; // Если ось X не инициализирована, выходим из функции
+               // console.warn('Ось X не найдена');
+                return; 
             }
 
             // Проходим по всем осям Y
             Object.keys(chart.scales).forEach(scaleId => {
                 const yAxis = chart.scales[scaleId];
-                if (yAxis && yAxis.isHorizontal() === false) { // Проверяем, что это ось Y
+                if (yAxis && yAxis.isHorizontal() === false) { 
                     ctx.save();
-                    ctx.strokeStyle = 'red'; 
+                    ctx.strokeStyle = 'red';
                     ctx.lineWidth = 1;
-
                     const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
             
                     // Проходим по всем меткам на оси X
@@ -495,45 +525,9 @@ plugins: [
 
 /*----------------------------------------------------------------------------------------*/
 
-document.getElementById('editForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const client = document.getElementById('client').value;
-    const bush = document.getElementById('bush').value;
-    const well = document.getElementById('well').value;
-    const work = document.getElementById('work').value;
-
-    const filePath = selectedFilePath;
-
-    // Отправляем данные в основной процесс
-    ipcRenderer.send('save-data', { filePath, newData: { client, bush, well, work } });
-});
-
-// Обработка ответа от основного процесса
-ipcRenderer.on('save-data-response', (event, { success, error }) => {
-    if (success) {
-        alert('Данные успешно сохранены!');
-        savedSuccessfully = true;
-        
-        // Получаем значения из формы
-        const client = document.getElementById('client').value;
-        const bush = document.getElementById('bush').value;
-        const well = document.getElementById('well').value;
-        const work = document.getElementById('work').value;
-
-        // Обновляем clientInfo
-        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}.`;
-
-        // Перерисовываем только текст clientInfo на канвасе
-        if (archiveChart) {
-            archiveChart.draw(); // Принудительно перерисовываем график, чтобы обновить текст
-        }
-    } else {
-        alert(`Ошибка: ${error}`);
-    }
-});
 
 /*----------------------------------------------------------------------------*/
+
 
 
                 });
