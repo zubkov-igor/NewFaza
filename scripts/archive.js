@@ -34,7 +34,6 @@ document.getElementById('csvFile').addEventListener('click', handleOpenCsvClick)
 ipcRenderer.on('selected-file', handleSelectedFile);
 document.getElementById('save').addEventListener('click', saveChartAsPNG);
 
-// Функция для сохранения графика как PNG
 function saveChartAsPNG() {
     const chart = archiveChart;
     const canvas = chart.canvas;
@@ -51,6 +50,7 @@ function saveChartAsPNG() {
     a.download = 'chart.png';
     a.click();
 }
+/*----------------------------------------------------------------------*/
 
 // Обработчик клика для обновления значений точек
 document.getElementById('updateValues').addEventListener('click', () => {
@@ -64,10 +64,10 @@ document.getElementById('updateValues').addEventListener('click', () => {
     }
 
     // Проверка на корректность вводимых значений
-    if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
-        alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
-        return;
-    }
+  //  if (isNaN(newValue1) || isNaN(newValue2) || newValue1 < 0 || newValue2 < 0) {
+    //    alert("Пожалуйста, введите корректные положительные числовые значения для обеих точек.");
+      //  return;
+  //  }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
@@ -152,6 +152,8 @@ function updatePointStyles() {
     }
 }
 
+/*----------------------------------------------------------------------------------*/
+
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
@@ -168,6 +170,8 @@ ipcRenderer.on('selected-file', (event, filePath) => {
     // Запрашиваем загрузку данных из выбранного файла
     ipcRenderer.send('load-data', filePath);
 });
+
+/*-------------------------------------------------------------------------------*/
 
 // Получаем данные после их загрузки
 ipcRenderer.on('data-loaded', (event, rows) => {
@@ -219,6 +223,8 @@ const clientInfoPlugin = {
 
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
+
+/*-------------------------------------------------------------------*/
 
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
@@ -292,15 +298,6 @@ function handleSelectedFile(event, path) {
                         });
                     });
 
-              /*      const chartSelect = document.getElementById('chartSelect');
-                    chartSelect.innerHTML = '';
-                    chartLabels.forEach(label => {
-                        const option = document.createElement('option');
-                        option.value = label;
-                        option.textContent = label;
-                        chartSelect.appendChild(option);
-                    }); */
-
                     const datasets = [];
                     const addDataset = (label, dataKey, color, yAxisID) => {
                         if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
@@ -337,7 +334,7 @@ datasets.forEach(dataset => {
             ticks: {
                 display: true,
                 position: 'left',
-                color: dataset.color // Устанавливаем цвет значений
+                color: dataset.color
             },
             title: {
                 display: false,
@@ -445,7 +442,7 @@ plugins: [
     annotationPlugin, 
     dragDataPlugin,
     {
-        id: 'lineMarkers', // Уникальный идентификатор для вашего плагина
+        id: 'lineMarkers',
         afterDraw: function(chart) {
             const ctx = chart.ctx;
             const xAxis = chart.scales.x;
@@ -460,20 +457,19 @@ plugins: [
                 const yAxis = chart.scales[scaleId];
                 if (yAxis && yAxis.isHorizontal() === false) { // Проверяем, что это ось Y
                     ctx.save();
-                    ctx.strokeStyle = 'red'; // Цвет черточек
-                    ctx.lineWidth = 1; // Толщина черточек
+                    ctx.strokeStyle = 'red'; 
+                    ctx.lineWidth = 1;
 
                     const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
             
                     // Проходим по всем меткам на оси X
                     xAxis.ticks.forEach((tick, index) => {
                         const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
-                        const yStart = Math.round(yBottom); // Начальная точка черточки по Y
-                        const yEnd = Math.round(yStart + 10); // Конечная точка черточки по Y (длина черточки)
+                        const yStart = Math.round(yBottom); // Начальная точка
+                        const yEnd = Math.round(yStart + 10); // Конечная точка
 
-                        console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
+                       // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
 
-                        // Рисуем черточку
                         ctx.beginPath();
                         ctx.moveTo(x, yStart);
                         ctx.lineTo(x, yEnd);
@@ -507,7 +503,6 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     const well = document.getElementById('well').value;
     const work = document.getElementById('work').value;
 
-    // Укажите путь к файлу CSV
     const filePath = selectedFilePath;
 
     // Отправляем данные в основной процесс
@@ -539,7 +534,6 @@ ipcRenderer.on('save-data-response', (event, { success, error }) => {
 });
 
 /*----------------------------------------------------------------------------*/
-
 
 
                 });
