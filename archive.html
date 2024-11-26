@@ -30,7 +30,7 @@
                         <button class="block-item_button" id="csvFile">Открыть CSV файл</button>
                         <button class="block-item_button" id="save">Сохранить как PNG</button>
                         <label>
-                            <input type="checkbox" id="hiddenCheck" onclick="toggleDiv()">
+                            <input type="checkbox" id="toggleRadius" />
                         </label>
                         <div id="file-path"></div>
                     </div>
@@ -81,19 +81,6 @@
             inputField.addEventListener('input', function() {
 
                 this.value = this.value.replace(/[^0-9]/g, '');
-
-
-                if (this.value < 0) {
-                    this.value = 0;
-                    alert("Отрицательные значения не допускаются. Восстановление до 0.");
-                }
-
-
-                if (this.value === '') {
-                    this.setCustomValidity("Пожалуйста, введите положительное целое число.");
-                } else {
-                    this.setCustomValidity("");
-                }
             });
         }
 
@@ -103,16 +90,6 @@
         validateInput(inputField1);
         validateInput(inputField2);
 
-        function toggleDiv() {
-            var checkbox = document.getElementById("hiddenCheck");
-            var div = document.getElementById("hidden");
-
-            if (checkbox.checked) {
-                div.style.display = "flex";
-            } else {
-                div.style.display = "none";
-            }
-        }
     </script>
     <script src="scripts/archive.js" defer></script>
 </body>

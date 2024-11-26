@@ -197,12 +197,12 @@ const clientInfoPlugin = {
     beforeDraw: function(chart) {
         const ctx = chart.ctx;
         ctx.save();
-        ctx.font = '12px Arial';
+        ctx.font = '14px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         const x = chart.width - 10;
-        let y = 30;
+        let y = 10;
         if (clientInfo) {
             const clientInfoArray = clientInfo.split('. ');
             const clientInfoWithValues = clientInfoArray.join(', ');
@@ -420,7 +420,8 @@ archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
                 enabled: true,
                 callbacks: {
                     label: function(tooltipItem) {
-                        return 'Value: ' + tooltipItem.raw + ' (' + tooltipItem.dataset.label + ')';
+                        return 'Value: ' + tooltipItem.raw.toFixed(2) + ' (' + tooltipItem.dataset.label + ')';
+
                     }
                 }
             },
@@ -461,7 +462,7 @@ archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
         },
         elements: {
             point: {
-                radius: 1
+                radius: 0
             }
         },
         annotation: {
@@ -523,6 +524,25 @@ plugins: [
 
 
 /*----------------------------------------------------------------------------------------*/
+       // Обработчик события для checkbox и управления видимостью div
+        document.getElementById('toggleRadius').addEventListener('change', function() {
+            const checkbox = this;
+            const div = document.getElementById("hidden");
+
+            // Изменяем радиус точек в зависимости от состояния checkbox
+            const newRadius = checkbox.checked ? 2 : 0;
+
+            // Обновляем настройки радиуса точек
+            archiveChart.options.elements.point.radius = newRadius;
+
+            // Управляем видимостью div
+            div.style.display = checkbox.checked ? "flex" : "none";
+
+            // Обновляем график
+            archiveChart.update(); 
+        });
+
+/*----------------------------------------------------------------------------------------*/                    
 
 
                 });
