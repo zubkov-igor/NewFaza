@@ -143,7 +143,7 @@ function updatePointStyles() {
     const messageElement = document.getElementById('message');
     if (selectedPoints.length === 2) {
         const timeValues = selectedPoints.map(index => archiveChart.data.labels[index]);
-        messageElement.innerText = `Выбран интервал: ${timeValues[0]} - ${timeValues[1]}`;
+        messageElement.innerText = `Интервал: ${timeValues[0]} - ${timeValues[1]}`;
     } else {
         messageElement.innerText = '';
     }
@@ -222,7 +222,6 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     const well = document.getElementById('well').value;
     const work = document.getElementById('work').value;
 
-    // Укажите путь к файлу CSV
     const filePath = selectedFilePath;
 
     // Отправляем данные в основной процесс
@@ -365,7 +364,7 @@ datasets.forEach(dataset => {
             ticks: {
                 display: true,
                 position: 'left',
-                color: dataset.color // Устанавливаем цвет значений
+                color: dataset.color
             },
             title: {
                 display: false,
@@ -524,10 +523,6 @@ plugins: [
 
 
 /*----------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------*/
-
 
 
                 });
