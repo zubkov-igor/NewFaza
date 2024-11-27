@@ -149,6 +149,16 @@ function updatePointStyles() {
     }
 }
 
+
+// Обработчик события для выбора графика
+document.getElementById('chartSelect').addEventListener('change', (event) => {
+    currentChartId = event.target.value; // Сохраняем идентификатор выбранного графика
+    selectedPoints = []; // Сбросить выбранные точки
+    activePoints.clear(); // Очистить активные точки
+    document.getElementById('updateValues').disabled = true; // Отключить кнопку обновления
+    updatePointStyles(); // Обновить стили точек
+});
+
 // Инициализация элемента для отображения сообщения
 const messageElement = document.createElement('div');
 messageElement.id = 'message';
@@ -251,6 +261,7 @@ ipcRenderer.on('save-data-response', (event, { success, error }) => {
         alert(`Ошибка: ${error}`);
     }
 });
+
 
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
@@ -359,6 +370,20 @@ function handleSelectedFile(event, path) {
                     addDataset('ОбъемВых', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
                     addDataset('РасВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
+
+
+                    // Заполнение <select> названиями графиков
+                    const chartSelectElement = document.getElementById('chartSelect');
+                    chartSelectElement.innerHTML = ''; // Очистить предыдущие опции
+
+
+                       datasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.label; // Значение опции
+                        option.textContent = dataset.label; // Текст опции
+                        chartSelectElement.appendChild(option); // Добавление опции в select
+                    });
+
 
                const scales = {};
 datasets.forEach(dataset => {
@@ -502,6 +527,8 @@ plugins: [
                         const yStart = Math.round(yBottom); // Начальная точка
                         const yEnd = Math.round(yStart + 10); // Конечная точка
 
+                       // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
+
                         ctx.beginPath();
                         ctx.moveTo(x, yStart);
                         ctx.lineTo(x, yEnd);
@@ -517,6 +544,13 @@ plugins: [
 });
 
                     enablePointSelection();
+
+                    // Инициализация выбора точек после загрузки графика
+                    function enablePointSelection() {
+                        const canvas = document.getElementById('archive');
+                        canvas.addEventListener('click', pointSelectionHandler);
+                    }
+
 
 /*----------------------------------------------------------------------------------------*/
        // Обработчик события для checkbox и управления видимостью div
@@ -538,7 +572,10 @@ plugins: [
         });
 /*--------------------------------------------------------------------------------------------*/
 
-                
+
+
+/*----------------------------------------------------------------------------------------*/                    
+
 
                 });
         });
