@@ -256,6 +256,8 @@ ipcRenderer.on('save-data-response', (event, { success, error }) => {
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
 
+/*--------------------------------------------------------------------------*/
+
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
     filePathElement.innerText = `файл: ${path}`;
@@ -266,6 +268,8 @@ function handleSelectedFile(event, path) {
         archiveChart.destroy();
         archiveChart = null;
     }
+
+    document.getElementById('spinner').style.display = 'block';
 
     const formattedData = [];
     const chartLabels = new Set();
@@ -293,17 +297,17 @@ function handleSelectedFile(event, path) {
                     } else if (row.Time) {
                         formattedData.push({
                             Time: row.Time,
-                            P_left: row.ДавЛевНас ? parseFloat(row.ДавЛевНас) : null,
-                            P_right: row.ДавПравНас ? parseFloat(row.ДавПравНас) : null,
-                            P_pipe: row.ДавВыход ? parseFloat(row.ДавВыход) : null,
-                            Q_left: row.РасЛевНас ? parseFloat(row.РасЛевНас) : null,
-                            Q_right: row.РасПравНас ? parseFloat(row.РасПравНас) : null,
-                            Q_pipe: row.РасВыход ? parseFloat(row.РасВыход) : null,
-                            T_rec: row.ТемпРец ? parseFloat(row.ТемпРец) : null,
-                            P_rec: row.ПлотРец ? parseFloat(row.ПлотРец) : null,
-                            V_pipe: row.ОбъемВых ? parseFloat(row.ОбъемВых) : null,
-                            Qw: row.РасВоды ? parseFloat(row.РасВоды) : null,
-                            Plm: row.Плотность ? parseFloat(row.Плотность) : null
+                            P_left: parseFloat(row.ДавЛевНас) || null,
+                            P_right: parseFloat(row.ДавПравНас) || null,
+                            P_pipe: parseFloat(row.ДавВыход) || null,
+                            Q_left: parseFloat(row.РасЛевНас) || null,
+                            Q_right: parseFloat(row.РасПравНас) || null,
+                            Q_pipe: parseFloat(row.РасВыход) || null,
+                            T_rec: parseFloat(row.ТемпРец) || null,
+                            P_rec: parseFloat(row.ПлотРец) || null,
+                            V_pipe: parseFloat(row.ОбъемВых) || null,
+                            Qw: parseFloat(row.РасВоды) || null,
+                            Plm: parseFloat(row.Плотность) || null
                         });
 
                         const headersToSkip = ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'];
@@ -318,6 +322,7 @@ function handleSelectedFile(event, path) {
                     console.error('Error parsing CSV:', error);
                 })
                 .on('end', () => {
+                    document.getElementById('spinner').style.display = 'none';
                     const time = formattedData.map(row => {
                         const parsedTime = Date.parse(`1970-01-01T${row.Time}`);
                         return isNaN(parsedTime) ? null : new Date(parsedTime).toLocaleTimeString('en-US', {
@@ -396,7 +401,7 @@ archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
             dragData: true, 
             dragX: true,   
             dragY: true,
-            tension: 0.1 // сглаживание
+            tension: 1 // сглаживание
         }))
     },
     options: {
@@ -541,6 +546,9 @@ plugins: [
             // Обновляем график
             archiveChart.update(); 
         });
+/*--------------------------------------------------------------------------------------------*/
+
+
 
 /*----------------------------------------------------------------------------------------*/                    
 
