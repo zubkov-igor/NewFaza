@@ -252,7 +252,6 @@ ipcRenderer.on('save-data-response', (event, { success, error }) => {
     }
 });
 
-
 // Регистрация плагина
 Chart.register(clientInfoPlugin);
 
@@ -503,8 +502,6 @@ plugins: [
                         const yStart = Math.round(yBottom); // Начальная точка
                         const yEnd = Math.round(yStart + 10); // Конечная точка
 
-                       // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
-
                         ctx.beginPath();
                         ctx.moveTo(x, yStart);
                         ctx.lineTo(x, yEnd);
@@ -520,13 +517,6 @@ plugins: [
 });
 
                     enablePointSelection();
-
-                    // Инициализация выбора точек после загрузки графика
-                    function enablePointSelection() {
-                        const canvas = document.getElementById('archive');
-                        canvas.addEventListener('click', pointSelectionHandler);
-                    }
-
 
 /*----------------------------------------------------------------------------------------*/
        // Обработчик события для checkbox и управления видимостью div
@@ -548,10 +538,7 @@ plugins: [
         });
 /*--------------------------------------------------------------------------------------------*/
 
-
-
-/*----------------------------------------------------------------------------------------*/                    
-
+                
 
                 });
         });
