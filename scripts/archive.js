@@ -197,8 +197,7 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         loadedData = data.Data || '';
 
         // Обновляем clientInfo
-                clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}. Дата: ${loadedData}.`;
-
+        clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}. Дата: ${loadedData}.`;
 
         // Обновляем график
         if (archiveChart) {
@@ -256,7 +255,11 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     });
 });
 
-// Обработка ответа от основного процесса
+
+function updateClientInfo(newClientInfo) {
+    clientInfo = newClientInfo; 
+}
+
 ipcRenderer.on('save-data-response', (event, {
     success,
     error
@@ -274,9 +277,8 @@ ipcRenderer.on('save-data-response', (event, {
         // Обновляем clientInfo
         clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}. Дата: ${loadedData}.`;
 
-        // Перерисовываем только текст clientInfo на канвасе
         if (archiveChart) {
-            archiveChart.draw(); // Принудительно перерисовываем график, чтобы обновить текст
+            archiveChart.update(); 
         }
     } else {
         alert(`Ошибка: ${error}`);
