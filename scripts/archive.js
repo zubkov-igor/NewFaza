@@ -154,7 +154,6 @@ function updatePointStyles() {
     }
 }
 
-
 // Обработчик события для выбора графика
 document.getElementById('chartSelect').addEventListener('change', (event) => {
     currentChartId = event.target.value; // Сохраняем идентификатор выбранного графика
@@ -182,6 +181,8 @@ ipcRenderer.on('selected-file', (event, filePath) => {
     ipcRenderer.send('load-data', filePath);
 });
 
+let loadedData = "";
+
 // Получаем данные после их загрузки
 ipcRenderer.on('data-loaded', (event, rows) => {
     if (rows.length > 0) {
@@ -193,8 +194,11 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         document.getElementById('well').value = data.Well || '';
         document.getElementById('work').value = data.Work || '';
 
+        loadedData = data.Data || '';
+
         // Обновляем clientInfo
-        clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}.`;
+                clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}. Дата: ${loadedData}.`;
+
 
         // Обновляем график
         if (archiveChart) {
@@ -246,7 +250,8 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
             client,
             bush,
             well,
-            work
+            work,
+            data: loadedData
         }
     });
 });
@@ -267,7 +272,7 @@ ipcRenderer.on('save-data-response', (event, {
         const work = document.getElementById('work').value;
 
         // Обновляем clientInfo
-        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}.`;
+        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}. Дата: ${loadedData}.`;
 
         // Перерисовываем только текст clientInfo на канвасе
         if (archiveChart) {
@@ -537,8 +542,6 @@ function handleSelectedFile(event, path) {
                                                 const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
                                                 const yStart = Math.round(yBottom); // Начальная точка
                                                 const yEnd = Math.round(yStart + 10); // Конечная точка
-
-                                                // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
 
                                                 ctx.beginPath();
                                                 ctx.moveTo(x, yStart);
