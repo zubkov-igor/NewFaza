@@ -1,5 +1,9 @@
-const { ipcRenderer } = require('electron');
-const { Readable } = require('stream');
+const {
+    ipcRenderer
+} = require('electron');
+const {
+    Readable
+} = require('stream');
 const chartjs = require('chart.js');
 const fastcsv = require('fast-csv');
 
@@ -65,7 +69,6 @@ document.getElementById('updateValues').addEventListener('click', () => {
         return; // Выход из функции, если выбрано не 2 точки
     }
 
-
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
     const endIndex = Math.max(selectedPoints[0], selectedPoints[1]);
 
@@ -76,8 +79,8 @@ document.getElementById('updateValues').addEventListener('click', () => {
             const randomValue = Math.random() * (newValue2 - newValue1) + newValue1;
             dataset.data[i] = randomValue; // Устанавливаем случайное значение
         }
-        dataset.data[startIndex] = newValue1; 
-        dataset.data[endIndex] = newValue2; 
+        dataset.data[startIndex] = newValue1;
+        dataset.data[endIndex] = newValue2;
     });
 
     selectedPoints = [];
@@ -101,7 +104,9 @@ function enablePointSelection() {
 
 // Обработчик клика для выделения интервала
 function pointSelectionHandler(event) {
-    const points = archiveChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+    const points = archiveChart.getElementsAtEventForMode(event, 'nearest', {
+        intersect: true
+    }, true);
 
     if (points.length) {
         const index = points[0].index;
@@ -183,14 +188,14 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         const data = rows[0];
 
         // Заполняем поля формы
-        document.getElementById('client').value = data.Client || ''; 
+        document.getElementById('client').value = data.Client || '';
         document.getElementById('bush').value = data.Bush || '';
         document.getElementById('well').value = data.Well || '';
         document.getElementById('work').value = data.Work || '';
 
         // Обновляем clientInfo
         clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}.`;
-        
+
         // Обновляем график
         if (archiveChart) {
             archiveChart.update();
@@ -199,7 +204,7 @@ ipcRenderer.on('data-loaded', (event, rows) => {
 });
 
 let clientInfo = "";
-let headers = ["Client", "Bush", "Well", "Work", "Data"]; 
+let headers = ["Client", "Bush", "Well", "Work", "Data"];
 let clientDataExtracted = false;
 
 const clientInfoPlugin = {
@@ -235,15 +240,26 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     const filePath = selectedFilePath;
 
     // Отправляем данные в основной процесс
-    ipcRenderer.send('save-data', { filePath, newData: { client, bush, well, work } });
+    ipcRenderer.send('save-data', {
+        filePath,
+        newData: {
+            client,
+            bush,
+            well,
+            work
+        }
+    });
 });
 
 // Обработка ответа от основного процесса
-ipcRenderer.on('save-data-response', (event, { success, error }) => {
+ipcRenderer.on('save-data-response', (event, {
+    success,
+    error
+}) => {
     if (success) {
         alert('Данные успешно сохранены!');
         savedSuccessfully = true;
-        
+
         // Получаем значения из формы
         const client = document.getElementById('client').value;
         const bush = document.getElementById('bush').value;
@@ -262,8 +278,6 @@ ipcRenderer.on('save-data-response', (event, { success, error }) => {
     }
 });
 
-
-// Регистрация плагина
 Chart.register(clientInfoPlugin);
 
 /*--------------------------------------------------------------------------*/
@@ -272,7 +286,7 @@ function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
     filePathElement.innerText = `файл: ${path}`;
 
-     selectedFilePath = path;
+    selectedFilePath = path;
 
     if (archiveChart) {
         archiveChart.destroy();
@@ -299,7 +313,9 @@ function handleSelectedFile(event, path) {
 
             const stream = Readable.from([data]);
             stream
-                .pipe(fastcsv.parse({ headers: true }))
+                .pipe(fastcsv.parse({
+                    headers: true
+                }))
                 .on('data', (row) => {
                     if (!clientDataExtracted) {
                         clientInfo = `Заказчик: ${row['Client']}. Куст: ${row['Bush']}. Скважина: ${row['Well']}. Работа: ${row['Work']}. Дата: ${row['Data']}`;
@@ -342,7 +358,7 @@ function handleSelectedFile(event, path) {
                             hour12: false
                         });
                     });
-  
+
                     const datasets = [];
                     const addDataset = (label, dataKey, color, yAxisID) => {
                         if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
@@ -371,13 +387,11 @@ function handleSelectedFile(event, path) {
                     addDataset('РасВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
-
                     // Заполнение <select> названиями графиков
                     const chartSelectElement = document.getElementById('chartSelect');
                     chartSelectElement.innerHTML = ''; // Очистить предыдущие опции
 
-
-                       datasets.forEach(dataset => {
+                    datasets.forEach(dataset => {
                         const option = document.createElement('option');
                         option.value = dataset.label; // Значение опции
                         option.textContent = dataset.label; // Текст опции
@@ -385,163 +399,160 @@ function handleSelectedFile(event, path) {
                     });
 
 
-               const scales = {};
-datasets.forEach(dataset => {
-    if (dataset.yAxisID) {
-        scales[dataset.yAxisID] = {
-            display: true,
-            ticks: {
-                display: true,
-                position: 'left',
-                color: dataset.color
-            },
-            title: {
-                display: false,
-                position: 'left',
-                text: dataset.label,
-                color: dataset.color, 
-                font: {
-                    size: 12,
-                    weight: 'normal'
-                }
-            },
-            grid: {
-                color: dataset.color,
-                lineWidth: 0,
-            },
-            font: {
-                size: 12
-            },
-        };
-    }
-});
-
-archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
-    type: 'line',
-    data: {
-        labels: time,
-        datasets: datasets.map(dataset => ({
-            ...dataset,
-            dragData: true, 
-            dragX: true,   
-            dragY: true,
-            tension: 1 // сглаживание
-        }))
-    },
-    options: {
-        scales: {
-            x: {
-                grid: {
-                    display: false
-                }
-            },
-           ...scales
-        },
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            clientInfoPlugin: {},
-            legend: {
-                display: true,
-                align: 'start'
-            },
-            tooltip: {
-                enabled: true,
-                callbacks: {
-                    label: function(tooltipItem) {
-                        return 'Value: ' + tooltipItem.raw.toFixed(2) + ' (' + tooltipItem.dataset.label + ')';
-
-                    }
-                }
-            },
-            zoom: {
-                pan: {
-                    enabled: true,
-                    mode: 'x',
-                    modifierKey: 'alt',
-                },
-                zoom: {
-                    wheel: {
-                        enabled: true,
-                        modifierKey: 'ctrl',
-                    },
-                    pinch: {
-                        enabled: true
-                    },
-                    mode: 'x',
-                }
-            },
-           
-        },
-        dragData: {
-            round: 2,
-            showTooltip: false,
-            onDragStart: function(event, datasetIndex, index, value){},
-            onDrag: function(event, datasetIndex, index, value) {},
-            onDragEnd: function(event, datasetIndex, index, value) {
-                datasets[datasetIndex].data[index] = value;
-                archiveChart.update();
-            }
-        },
-        animation: {
-            duration: 1000,
-        },
-        hover: {
-            animationDuration: 500,
-        },
-        elements: {
-            point: {
-                radius: 0
-            }
-        },
-        annotation: {
-            annotations: []
-        }
-    },
-plugins: [
-    annotationPlugin, 
-    dragDataPlugin,
-    {
-        id: 'lineMarkers',
-        afterDraw: function(chart) {
-            const ctx = chart.ctx;
-            const xAxis = chart.scales.x;
-
-            if (!xAxis) {
-               // console.warn('Ось X не найдена');
-                return; 
-            }
-
-            // Проходим по всем осям Y
-            Object.keys(chart.scales).forEach(scaleId => {
-                const yAxis = chart.scales[scaleId];
-                if (yAxis && yAxis.isHorizontal() === false) { 
-                    ctx.save();
-                    ctx.strokeStyle = 'red';
-                    ctx.lineWidth = 1;
-                    const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
-            
-                    // Проходим по всем меткам на оси X
-                    xAxis.ticks.forEach((tick, index) => {
-                        const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
-                        const yStart = Math.round(yBottom); // Начальная точка
-                        const yEnd = Math.round(yStart + 10); // Конечная точка
-
-                       // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
-
-                        ctx.beginPath();
-                        ctx.moveTo(x, yStart);
-                        ctx.lineTo(x, yEnd);
-                        ctx.stroke();
+                    const scales = {};
+                    datasets.forEach(dataset => {
+                        if (dataset.yAxisID) {
+                            scales[dataset.yAxisID] = {
+                                display: true,
+                                ticks: {
+                                    display: true,
+                                    position: 'left',
+                                    color: dataset.color
+                                },
+                                title: {
+                                    display: false,
+                                    position: 'left',
+                                    text: dataset.label,
+                                    color: dataset.color,
+                                    font: {
+                                        size: 12,
+                                        weight: 'normal'
+                                    }
+                                },
+                                grid: {
+                                    color: dataset.color,
+                                    lineWidth: 0,
+                                },
+                            };
+                        }
                     });
 
-                    ctx.restore();
-                }
-            });
-        }
-    }
-]
-});
+                    archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: time,
+                            datasets: datasets.map(dataset => ({
+                                ...dataset,
+                                dragData: true,
+                                dragX: true,
+                                dragY: true,
+                                tension: 1 // сглаживание
+                            }))
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                ...scales
+                            },
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                clientInfoPlugin: {},
+                                legend: {
+                                    display: true,
+                                    align: 'start'
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            return 'Value: ' + tooltipItem.raw.toFixed(2) + ' (' + tooltipItem.dataset.label + ')';
+
+                                        }
+                                    }
+                                },
+                                zoom: {
+                                    pan: {
+                                        enabled: true,
+                                        mode: 'x',
+                                        modifierKey: 'alt',
+                                    },
+                                    zoom: {
+                                        wheel: {
+                                            enabled: true,
+                                            modifierKey: 'ctrl',
+                                        },
+                                        pinch: {
+                                            enabled: true
+                                        },
+                                        mode: 'x',
+                                    }
+                                },
+
+                            },
+                            dragData: {
+                                round: 2,
+                                showTooltip: false,
+                                onDragStart: function(event, datasetIndex, index, value) {},
+                                onDrag: function(event, datasetIndex, index, value) {},
+                                onDragEnd: function(event, datasetIndex, index, value) {
+                                    datasets[datasetIndex].data[index] = value;
+                                    archiveChart.update();
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                            },
+                            hover: {
+                                animationDuration: 500,
+                            },
+                            elements: {
+                                point: {
+                                    radius: 0
+                                }
+                            },
+                            annotation: {
+                                annotations: []
+                            }
+                        },
+                        plugins: [
+                            annotationPlugin,
+                            dragDataPlugin,
+                            {
+                                id: 'lineMarkers',
+                                afterDraw: function(chart) {
+                                    const ctx = chart.ctx;
+                                    const xAxis = chart.scales.x;
+
+                                    if (!xAxis) {
+                                        // console.warn('Ось X не найдена');
+                                        return;
+                                    }
+
+                                    // Проходим по всем осям Y
+                                    Object.keys(chart.scales).forEach(scaleId => {
+                                        const yAxis = chart.scales[scaleId];
+                                        if (yAxis && yAxis.isHorizontal() === false) {
+                                            ctx.save();
+                                            ctx.strokeStyle = 'red';
+                                            ctx.lineWidth = 1;
+                                            const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
+
+                                            // Проходим по всем меткам на оси X
+                                            xAxis.ticks.forEach((tick, index) => {
+                                                const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
+                                                const yStart = Math.round(yBottom); // Начальная точка
+                                                const yEnd = Math.round(yStart + 10); // Конечная точка
+
+                                                // console.log('Drawing line at x:', x, 'yStart:', yStart, 'yEnd:', yEnd); // Проверка координат
+
+                                                ctx.beginPath();
+                                                ctx.moveTo(x, yStart);
+                                                ctx.lineTo(x, yEnd);
+                                                ctx.stroke();
+                                            });
+
+                                            ctx.restore();
+                                        }
+                                    });
+                                }
+                            }
+                        ]
+                    });
 
                     enablePointSelection();
 
@@ -552,30 +563,25 @@ plugins: [
                     }
 
 
-/*----------------------------------------------------------------------------------------*/
-       // Обработчик события для checkbox и управления видимостью div
-        document.getElementById('toggleRadius').addEventListener('change', function() {
-            const checkbox = this;
-            const div = document.getElementById("hidden");
+                    /*----------------------------------------------------------------------------------------*/
+                    // Обработчик события для checkbox и управления видимостью div
+                    document.getElementById('toggleRadius').addEventListener('change', function() {
+                        const checkbox = this;
+                        const div = document.getElementById("hidden");
 
-            // Изменяем радиус точек в зависимости от состояния checkbox
-            const newRadius = checkbox.checked ? 2 : 0;
+                        // Изменяем радиус точек в зависимости от состояния checkbox
+                        const newRadius = checkbox.checked ? 2 : 0;
 
-            // Обновляем настройки радиуса точек
-            archiveChart.options.elements.point.radius = newRadius;
+                        // Обновляем настройки радиуса точек
+                        archiveChart.options.elements.point.radius = newRadius;
 
-            // Управляем видимостью div
-            div.style.display = checkbox.checked ? "flex" : "none";
+                        // Управляем видимостью div
+                        div.style.display = checkbox.checked ? "flex" : "none";
 
-            // Обновляем график
-            archiveChart.update(); 
-        });
-/*--------------------------------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------------------------*/                    
-
+                        // Обновляем график
+                        archiveChart.update();
+                    });
+                    /*--------------------------------------------------------------------------------------------*/
 
                 });
         });
