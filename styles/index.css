@@ -567,13 +567,18 @@ input {
     border-radius: 5px;
 }
 
+.number {
+    max-width: 50px;
+    width: 100%;
+}
+
 input[type="number"] {
     max-width: 50px;
 }
 
-input[type="text"] {
+/*input[type="text"] {
     max-width: 390px;
-}
+} */
 
 .spinner {
     position: fixed;

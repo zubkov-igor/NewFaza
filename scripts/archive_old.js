@@ -24,7 +24,11 @@ const ChartZoom = require('chartjs-plugin-zoom');
 
 Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineElement, Legend, Tooltip, ChartZoom]);
 
-
+let archiveChart;
+let selectedPoints = [];
+const activePoints = new Set();
+let currentChartId = null;
+let selectedFilePath = '';
 
 function handleOpenCsvClick() {
     ipcRenderer.send('open-file-dialog');
@@ -52,12 +56,6 @@ function saveChartAsPNG() {
     a.click();
 }
 
-let archiveChart;
-let selectedPoints = [];
-const activePoints = new Set();
-let currentChartId = null;
-let selectedFilePath = '';
-
 /*----------------------------------------------------------------------------*/
 
 // Обработчик клика для обновления значений точек
@@ -68,7 +66,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на количество выбранных точек
     if (selectedPoints.length !== 2) {
         alert("Выберите 2 точки для обновления значений.");
-        return; 
+        return; // Выход из функции, если выбрано не 2 точки
     }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
@@ -76,15 +74,13 @@ document.getElementById('updateValues').addEventListener('click', () => {
 
     // Генерируем случайные значения для промежуточных точек
     archiveChart.data.datasets.forEach((dataset) => {
-        if (dataset.label === currentChartId) {
-            for (let i = startIndex + 1; i < endIndex; i++) {
-                // Генерируем случайное значение между newValue1 и newValue2
-                const randomValue = Math.random() * (newValue2 - newValue1) + newValue1;
-                dataset.data[i] = randomValue; // Устанавливаем случайное значение
-            }
-            dataset.data[startIndex] = newValue1;
-            dataset.data[endIndex] = newValue2;
+        for (let i = startIndex + 1; i < endIndex; i++) {
+            // Генерируем случайное значение между newValue1 и newValue2
+            const randomValue = Math.random() * (newValue2 - newValue1) + newValue1;
+            dataset.data[i] = randomValue; // Устанавливаем случайное значение
         }
+        dataset.data[startIndex] = newValue1;
+        dataset.data[endIndex] = newValue2;
     });
 
     selectedPoints = [];
@@ -135,19 +131,16 @@ function pointSelectionHandler(event) {
 
         selectedPoints = Array.from(activePoints);
         document.getElementById('updateValues').disabled = selectedPoints.length !== 2;
-        updatePointStyles(); // Обновляем стили точек
+        updatePointStyles();
     }
 }
 
 // Функция для обновления стилей точек
 function updatePointStyles() {
-    console.log('Updating point styles for chart:', currentChartId); // Логирование для отладки
     archiveChart.data.datasets.forEach((dataset) => {
-        if (dataset.label === currentChartId) {
-            dataset.pointBackgroundColor = dataset.data.map((_, index) => {
-                return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
-            });
-        }
+        dataset.pointBackgroundColor = dataset.data.map((_, index) => {
+            return selectedPoints.includes(index) ? 'rgba(255,0,0,1)' : dataset.borderColor;
+        });
     });
 
     archiveChart.update();
@@ -262,8 +255,9 @@ document.getElementById('editForm').addEventListener('submit', (event) => {
     });
 });
 
+
 function updateClientInfo(newClientInfo) {
-    clientInfo = newClientInfo;
+    clientInfo = newClientInfo; 
 }
 
 ipcRenderer.on('save-data-response', (event, {
@@ -284,7 +278,7 @@ ipcRenderer.on('save-data-response', (event, {
         clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}. Дата: ${loadedData}.`;
 
         if (archiveChart) {
-            archiveChart.update();
+            archiveChart.update(); 
         }
     } else {
         alert(`Ошибка: ${error}`);
@@ -400,21 +394,16 @@ function handleSelectedFile(event, path) {
                     addDataset('РасВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
-                // Заполнение <select> названиями графиков
-    const chartSelectElement = document.getElementById('chartSelect');
-    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>'; // Очистить предыдущие опции и добавить пустую строку
+                    // Заполнение <select> названиями графиков
+                    const chartSelectElement = document.getElementById('chartSelect');
+                    chartSelectElement.innerHTML = ''; // Очистить предыдущие опции
 
-    datasets.forEach(dataset => {
-        const option = document.createElement('option');
-        option.value = dataset.label; // Значение опции
-        option.textContent = dataset.label; // Текст опции
-        chartSelectElement.appendChild(option); // Добавление опции в select
-    });
-
-    // Устанавливаем первый график по умолчанию
-    if (datasets.length > 0) {
-        currentChartId = datasets[0].label;
-    }
+                    datasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.label; // Значение опции
+                        option.textContent = dataset.label; // Текст опции
+                        chartSelectElement.appendChild(option); // Добавление опции в select
+                    });
 
 
                     const scales = {};
@@ -508,23 +497,75 @@ function handleSelectedFile(event, path) {
                                 onDragStart: function(event, datasetIndex, index, value) {},
                                 onDrag: function(event, datasetIndex, index, value) {},
                                 onDragEnd: function(event, datasetIndex, index, value) {
-                                    // Обновление значений в JSON
-                                    const newValue = parseFloat(value.toFixed(2));
-                                    formattedData[index][datasets[datasetIndex].dataKey] = newValue;
-                                    if (archiveChart) {
-                                        archiveChart.update();
-                                    }
+                                    datasets[datasetIndex].data[index] = value;
+                                    archiveChart.update();
                                 }
+                            },
+                            animation: {
+                                duration: 1000,
+                            },
+                            hover: {
+                                animationDuration: 500,
+                            },
+                            elements: {
+                                point: {
+                                    radius: 0
+                                }
+                            },
+                            annotation: {
+                                annotations: []
                             }
                         },
-                        plugins: [clientInfoPlugin]
+                        plugins: [
+                            annotationPlugin,
+                            dragDataPlugin,
+                            {
+                                id: 'lineMarkers',
+                                afterDraw: function(chart) {
+                                    const ctx = chart.ctx;
+                                    const xAxis = chart.scales.x;
+
+                                    if (!xAxis) {
+                                        // console.warn('Ось X не найдена');
+                                        return;
+                                    }
+
+                                    // Проходим по всем осям Y
+                                    Object.keys(chart.scales).forEach(scaleId => {
+                                        const yAxis = chart.scales[scaleId];
+                                        if (yAxis && yAxis.isHorizontal() === false) {
+                                            ctx.save();
+                                            ctx.strokeStyle = 'red';
+                                            ctx.lineWidth = 1;
+                                            const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
+
+                                            // Проходим по всем меткам на оси X
+                                            xAxis.ticks.forEach((tick, index) => {
+                                                const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
+                                                const yStart = Math.round(yBottom); // Начальная точка
+                                                const yEnd = Math.round(yStart + 10); // Конечная точка
+
+                                                ctx.beginPath();
+                                                ctx.moveTo(x, yStart);
+                                                ctx.lineTo(x, yEnd);
+                                                ctx.stroke();
+                                            });
+
+                                            ctx.restore();
+                                        }
+                                    });
+                                }
+                            }
+                        ]
                     });
 
                     enablePointSelection();
-                    updatePointStyles();
-                });
-        });
-}
+
+                    // Инициализация выбора точек после загрузки графика
+                    function enablePointSelection() {
+                        const canvas = document.getElementById('archive');
+                        canvas.addEventListener('click', pointSelectionHandler);
+                    }
 
 
                     /*----------------------------------------------------------------------------------------*/
@@ -547,3 +588,6 @@ function handleSelectedFile(event, path) {
                     });
                     /*--------------------------------------------------------------------------------------------*/
 
+                });
+        });
+}
