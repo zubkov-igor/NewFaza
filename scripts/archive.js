@@ -378,7 +378,7 @@ function handleSelectedFile(event, path) {
                             datasets.push({
                                 label: label,
                                 data: formattedData.map(row => parseFloat(row[dataKey])),
-                                backgroundColor: formattedData.map(() => color),
+                                                               backgroundColor: formattedData.map(() => color),
                                 borderColor: color,
                                 borderWidth: 1,
                                 cubicInterpolationMode: 'monotone',
@@ -400,22 +400,21 @@ function handleSelectedFile(event, path) {
                     addDataset('РасВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
-                // Заполнение <select> названиями графиков
-    const chartSelectElement = document.getElementById('chartSelect');
-    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>'; // Очистить предыдущие опции и добавить пустую строку
+                    // Заполнение <select> названиями графиков
+                    const chartSelectElement = document.getElementById('chartSelect');
+                    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>'; // Очистить предыдущие опции и добавить пустую строку
 
-    datasets.forEach(dataset => {
-        const option = document.createElement('option');
-        option.value = dataset.label; // Значение опции
-        option.textContent = dataset.label; // Текст опции
-        chartSelectElement.appendChild(option); // Добавление опции в select
-    });
+                    datasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.label; // Значение опции
+                        option.textContent = dataset.label; // Текст опции
+                        chartSelectElement.appendChild(option); // Добавление опции в select
+                    });
 
-    // Устанавливаем первый график по умолчанию
-    if (datasets.length > 0) {
-        currentChartId = datasets[0].label;
-    }
-
+                    // Устанавливаем первый график по умолчанию
+                    if (datasets.length > 0) {
+                        currentChartId = datasets[0].label;
+                    }
 
                     const scales = {};
                     datasets.forEach(dataset => {
@@ -444,6 +443,40 @@ function handleSelectedFile(event, path) {
                             };
                         }
                     });
+
+                    // Создание плагина для рисования красных меток
+                    const lineMarkersPlugin = {
+                        id: 'lineMarkers',
+                        afterDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            const xAxis = chart.scales['x'];
+
+                            if (!xAxis) {
+                                console.warn('Ось X не найдена');
+                                return;
+                            }
+
+                            ctx.save();
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 1;
+
+                            xAxis.ticks.forEach((tick, index) => {
+                                const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
+                                const yBottom = Math.round(xAxis.bottom); // Начальная точка
+                                const yEnd = Math.round(yBottom + 10); // Конечная точка
+
+                                ctx.beginPath();
+                                ctx.moveTo(x, yBottom);
+                                ctx.lineTo(x, yEnd);
+                                ctx.stroke();
+                            });
+
+                            ctx.restore();
+                        }
+                    };
+
+                    // Регистрация плагина
+                    Chart.register(lineMarkersPlugin);
 
                     archiveChart = new Chart(document.getElementById('archive').getContext('2d'), {
                         type: 'line',
@@ -479,7 +512,6 @@ function handleSelectedFile(event, path) {
                                     callbacks: {
                                         label: function(tooltipItem) {
                                             return 'Value: ' + tooltipItem.raw.toFixed(2) + ' (' + tooltipItem.dataset.label + ')';
-
                                         }
                                     }
                                 },
@@ -499,11 +531,10 @@ function handleSelectedFile(event, path) {
                                         },
                                         mode: 'x',
                                     }
-                                },
-
+                                }
                             },
                             dragData: {
-                                round: 2,
+                                round: 0,
                                 showTooltip: false,
                                 onDragStart: function(event, datasetIndex, index, value) {},
                                 onDrag: function(event, datasetIndex, index, value) {},
@@ -517,12 +548,56 @@ function handleSelectedFile(event, path) {
                                 }
                             }
                         },
-                        plugins: [clientInfoPlugin]
+                        plugins: [
+                            annotationPlugin,
+                            dragDataPlugin,
+                            {
+                                id: 'lineMarkers',
+                                afterDraw: function(chart) {
+                                    const ctx = chart.ctx;
+                                    const xAxis = chart.scales.x;
+
+                                    if (!xAxis) {
+                                        // console.warn('Ось X не найдена');
+                                        return;
+                                    }
+
+                                    // Проходим по всем осям Y
+                                    Object.keys(chart.scales).forEach(scaleId => {
+                                        const yAxis = chart.scales[scaleId];
+                                        if (yAxis && yAxis.isHorizontal() === false) {
+                                            ctx.save();
+                                            ctx.strokeStyle = 'red';
+                                            ctx.lineWidth = 1;
+                                            const yBottom = yAxis.bottom; // Получаем нижнюю границу оси Y
+
+                                            // Проходим по всем меткам на оси X
+                                            xAxis.ticks.forEach((tick, index) => {
+                                                const x = Math.round(xAxis.getPixelForTick(index)); // Округляем x
+                                                const yStart = Math.round(yBottom); // Начальная точка
+                                                const yEnd = Math.round(yStart + 10); // Конечная точка
+
+                                                ctx.beginPath();
+                                                ctx.moveTo(x, yStart);
+                                                ctx.lineTo(x, yEnd);
+                                                ctx.stroke();
+                                            });
+
+                                            ctx.restore();
+                                        }
+                                    });
+                                }
+                            }
+                        ]
                     });
 
                     enablePointSelection();
                     updatePointStyles();
                 });
+        })
+        .catch(error => {
+            console.error('Error fetching file:', error);
+            document.getElementById('spinner').style.display = 'none';
         });
 }
 
