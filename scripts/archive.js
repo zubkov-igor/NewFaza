@@ -24,8 +24,6 @@ const ChartZoom = require('chartjs-plugin-zoom');
 
 Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineElement, Legend, Tooltip, ChartZoom]);
 
-
-
 function handleOpenCsvClick() {
     ipcRenderer.send('open-file-dialog');
 }
@@ -117,7 +115,7 @@ function pointSelectionHandler(event) {
         const timeValue = archiveChart.data.labels[index];
 
         const messageElement = document.getElementById('message');
-        messageElement.innerText = `Выбрано время: ${timeValue}`;
+        messageElement.innerText = `ИНтервал: ${timeValue}`;
 
         // Добавляем или удаляем точку из выбранных
         if (activePoints.has(index)) {
@@ -141,7 +139,7 @@ function pointSelectionHandler(event) {
 
 // Функция для обновления стилей точек
 function updatePointStyles() {
-    console.log('Updating point styles for chart:', currentChartId); // Логирование для отладки
+  //  console.log('Updating point styles for chart:', currentChartId); 
     archiveChart.data.datasets.forEach((dataset) => {
         if (dataset.label === currentChartId) {
             dataset.pointBackgroundColor = dataset.data.map((_, index) => {
@@ -293,8 +291,33 @@ ipcRenderer.on('save-data-response', (event, {
 
 Chart.register(clientInfoPlugin);
 
-/*--------------------------------------------------------------------------*/
 
+// Установите начальное состояние чекбокса и радиуса точек
+const toggleRadiusCheckbox = document.getElementById('toggleRadius');
+toggleRadiusCheckbox.checked = false; // Чекбокс по умолчанию не активен
+
+// Обработчик события для checkbox и управления видимостью div
+toggleRadiusCheckbox.addEventListener('change', function() {
+    const checkbox = this;
+    const div = document.getElementById("hidden");
+
+    // Изменяем радиус точек в зависимости от состояния checkbox
+    const newRadius = checkbox.checked ? 2 : 0; // Если чекбокс активен, радиус 0, иначе 2
+
+    // Обновляем настройки радиуса точек
+    if (archiveChart) {
+        archiveChart.data.datasets.forEach(dataset => {
+            dataset.pointRadius = newRadius; // Измените радиус точек
+        });
+        archiveChart.update(); // Обновите график
+    }
+
+    // Управляем видимостью div
+    div.style.display = checkbox.checked ? "flex" : "none";
+});
+
+
+/*--------------------------------------------------------------------------*/
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
     filePathElement.innerText = `файл: ${path}`;
@@ -378,9 +401,10 @@ function handleSelectedFile(event, path) {
                             datasets.push({
                                 label: label,
                                 data: formattedData.map(row => parseFloat(row[dataKey])),
-                                                               backgroundColor: formattedData.map(() => color),
+                                backgroundColor: formattedData.map(() => color),
                                 borderColor: color,
                                 borderWidth: 1,
+                                pointRadius: 0,
                                 cubicInterpolationMode: 'monotone',
                                 yAxisID: yAxisID,
                                 color: color
@@ -402,7 +426,7 @@ function handleSelectedFile(event, path) {
 
                     // Заполнение <select> названиями графиков
                     const chartSelectElement = document.getElementById('chartSelect');
-                    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>'; // Очистить предыдущие опции и добавить пустую строку
+                    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>';
 
                     datasets.forEach(dataset => {
                         const option = document.createElement('option');
@@ -601,24 +625,4 @@ function handleSelectedFile(event, path) {
         });
 }
 
-
-                    /*----------------------------------------------------------------------------------------*/
-                    // Обработчик события для checkbox и управления видимостью div
-                    document.getElementById('toggleRadius').addEventListener('change', function() {
-                        const checkbox = this;
-                        const div = document.getElementById("hidden");
-
-                        // Изменяем радиус точек в зависимости от состояния checkbox
-                        const newRadius = checkbox.checked ? 2 : 0;
-
-                        // Обновляем настройки радиуса точек
-                        archiveChart.options.elements.point.radius = newRadius;
-
-                        // Управляем видимостью div
-                        div.style.display = checkbox.checked ? "flex" : "none";
-
-                        // Обновляем график
-                        archiveChart.update();
-                    });
-                    /*--------------------------------------------------------------------------------------------*/
 
