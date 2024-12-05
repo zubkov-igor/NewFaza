@@ -382,6 +382,14 @@ function handleSelectedFile(event, path) {
 
     document.getElementById('spinner').style.display = 'block';
 
+    const saveButton = document.getElementById('save');
+
+        if (archiveChart === null) {
+        saveButton.disabled = true; 
+    } else {
+        saveButton.disabled = false;
+    }
+
     const formattedData = [];
     const chartLabels = new Set();
 

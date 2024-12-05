@@ -551,6 +551,12 @@ select {
     cursor: pointer;
 }
 
+.block-item_button:disabled {
+    background-color: #ccc; 
+    color: #666; 
+    cursor: not-allowed; 
+}
+
 .vline {
     width: 1px;
     height: 40px;
@@ -585,10 +591,6 @@ input {
 input[type="number"] {
     max-width: 50px;
 }
-
-/*input[type="text"] {
-    max-width: 390px;
-} */
 
 .spinner {
     position: fixed;
