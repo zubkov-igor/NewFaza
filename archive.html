@@ -29,15 +29,23 @@
                             </button></a>
                         <button class="block-item_button" id="csvFile">Открыть CSV файл</button>
                         <button class="block-item_button" id="save">Сохранить как PNG</button>
-                
-<button class="block-item_button" id="toggleRadiusButton">Редактирование</button>
+
+                        <span class="switch">
+                            <input type="checkbox" class="switch__input" role="switch" name="switch1" id="toggleRadius" />
+                            <span class="switch__fill" aria-hidden="true">
+                                <span class="switch__text">ON</span>
+                                <span class="switch__text">OFF</span>
+                            </span>
+                        </span>
+
+
                         <div id="file-path"></div>
                     </div>
                     <div class="block__main">
                         <div id="spinner" class="spinner" style="display: none;">
-    
-    <div class="loader"></div>
-</div>
+
+                            <div class="loader"></div>
+                        </div>
 
                         <canvas id="archive">
 
@@ -52,9 +60,9 @@
                         <div class="form-row">
                             <div class="row-group">
                                 <div id="message"></div>
-                      <select id="chartSelect">
-    <option value="">Выберите график</option>
-</select>                  <input type="text" class="number" id="value1" min="0" required>
+                                <select id="chartSelect">
+                                    <option value="">Выберите график</option>
+                                </select> <input type="text" class="number" id="value1" min="0" required>
                                 <input type="text" class="number" id="value2" min="0" required>
                                 <button class="block-item_button" id="updateValues" disabled>Обновить график</button>
                                 <div class="vline"></div>
@@ -84,35 +92,37 @@
             </div>
         </footer>
     </div>
-<script>
-    function validateInput(inputField) {
-        inputField.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9,]/g, '');
-        });
-    }
+    <script>
+        function validateInput(inputField) {
+            inputField.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9,]/g, '');
+            });
+        }
 
-    const inputField1 = document.getElementById('value1');
-    const inputField2 = document.getElementById('value2');
-    const bush = document.getElementById('bush');
-    const well = document.getElementById('well');
+        const inputField1 = document.getElementById('value1');
+        const inputField2 = document.getElementById('value2');
+        const bush = document.getElementById('bush');
+        const well = document.getElementById('well');
 
-    validateInput(inputField1);
-    validateInput(inputField2);
-    validateInput(bush);
-    validateInput(well);
-</script>
+        validateInput(inputField1);
+        validateInput(inputField2);
+        validateInput(bush);
+        validateInput(well);
+    </script>
+
+    <div id="passwordModal" style="display: none;">
+        <div class="modalContent">
+            <input type="password" id="passwordInput" placeholder="Введите пароль" />
+            <button id="submitPassword" style="border: none; background: none; cursor: pointer;">
+                <img class="icon" src="img/yes.png" alt="">
+            </button>
+            <button id="cancelPassword" style="border: none; background: none; cursor: pointer;">
+                <img class="icon" src="img/no.png" alt="">
+            </button>
+        </div>
+    </div>
 
     <script src="scripts/archive.js" defer></script>
-
-<div id="passwordModal" style="display:none;">
-    <div id="modalContent">
-        <h2>Введите пароль</h2>
-        <input type="password" id="passwordInput" placeholder="Пароль">
-        <button id="submitPassword">Подтвердить</button>
-        <button id="cancelPassword">Отмена</button>
-    </div>
-</div>
-
 </body>
 
 </html>

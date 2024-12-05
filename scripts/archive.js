@@ -292,22 +292,23 @@ ipcRenderer.on('save-data-response', (event, {
 Chart.register(clientInfoPlugin);
 
 /*--------------------------------------------------------------------------*/
-const toggleRadiusButton = document.getElementById('toggleRadiusButton');
+const toggleRadiusCheckbox = document.getElementById('toggleRadius');
 const hiddenDiv = document.getElementById("hidden");
 const passwordModal = document.getElementById("passwordModal");
 const passwordInput = document.getElementById("passwordInput");
 const submitPasswordButton = document.getElementById("submitPassword");
 const cancelPasswordButton = document.getElementById("cancelPassword");
-
-// Задайте правильный пароль
-const correctPassword = "123"; // Замените "ваш_пароль" на желаемый пароль
+const correctPassword = "123";
 
 // Переменная для отслеживания состояния радиуса
 let isRadiusVisible = false;
 
-// Обработчик события для кнопки
-toggleRadiusButton.addEventListener('click', function() {
-    passwordModal.style.display = "flex"; // Показываем модальное окно
+// Обработчик события для чекбокса
+toggleRadiusCheckbox.addEventListener('change', function() {
+    if (toggleRadiusCheckbox.checked) {
+        passwordModal.style.display = "flex"; 
+        hiddenDiv.style.display = "none"; 
+    }
 });
 
 // Обработчик события для кнопки подтверждения
@@ -333,6 +334,7 @@ submitPasswordButton.addEventListener('click', function() {
     } else {
         alert("Неверный пароль!"); // Сообщаем об ошибке
         passwordInput.value = ""; // Очищаем поле ввода
+        toggleRadiusCheckbox.checked = false; // Сбрасываем чекбокс
     }
 });
 
@@ -340,7 +342,9 @@ submitPasswordButton.addEventListener('click', function() {
 cancelPasswordButton.addEventListener('click', function() {
     passwordModal.style.display = "none"; // Скрываем модальное окно
     passwordInput.value = ""; // Очищаем поле ввода
+    toggleRadiusCheckbox.checked = false; // Сбрасываем чекбокс
 });
+
 
 /*--------------------------------------------------------------------------*/
 
