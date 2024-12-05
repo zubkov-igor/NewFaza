@@ -384,11 +384,22 @@ function handleSelectedFile(event, path) {
 
     const saveButton = document.getElementById('save');
 
+     const toggleRadius = document.getElementById('toggleRadius');
+
         if (archiveChart === null) {
         saveButton.disabled = true; 
     } else {
         saveButton.disabled = false;
     }
+
+    if (archiveChart === null) {
+        saveButton.disabled = true; 
+        toggleRadius.disabled = true; 
+    } else {
+        saveButton.disabled = false; 
+        toggleRadius.disabled = false;
+    }
+
 
     const formattedData = [];
     const chartLabels = new Set();

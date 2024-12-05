@@ -739,6 +739,12 @@ input[type="number"] {
     -webkit-appearance: none;
     appearance: none;
 }
+
+.switch__input:disabled {
+    background-color: #ccc; 
+    color: #666; 
+    cursor: not-allowed;
+}
 .switch__input:focus-visible {
     box-shadow: 0 0 0 0.125em var(--primary);
 }
