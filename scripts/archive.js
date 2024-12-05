@@ -291,33 +291,59 @@ ipcRenderer.on('save-data-response', (event, {
 
 Chart.register(clientInfoPlugin);
 
+/*--------------------------------------------------------------------------*/
+const toggleRadiusButton = document.getElementById('toggleRadiusButton');
+const hiddenDiv = document.getElementById("hidden");
+const passwordModal = document.getElementById("passwordModal");
+const passwordInput = document.getElementById("passwordInput");
+const submitPasswordButton = document.getElementById("submitPassword");
+const cancelPasswordButton = document.getElementById("cancelPassword");
 
-// Установите начальное состояние чекбокса и радиуса точек
-const toggleRadiusCheckbox = document.getElementById('toggleRadius');
-toggleRadiusCheckbox.checked = false; // Чекбокс по умолчанию не активен
+// Задайте правильный пароль
+const correctPassword = "123"; // Замените "ваш_пароль" на желаемый пароль
 
-// Обработчик события для checkbox и управления видимостью div
-toggleRadiusCheckbox.addEventListener('change', function() {
-    const checkbox = this;
-    const div = document.getElementById("hidden");
+// Переменная для отслеживания состояния радиуса
+let isRadiusVisible = false;
 
-    // Изменяем радиус точек в зависимости от состояния checkbox
-    const newRadius = checkbox.checked ? 2 : 0; // Если чекбокс активен, радиус 0, иначе 2
-
-    // Обновляем настройки радиуса точек
-    if (archiveChart) {
-        archiveChart.data.datasets.forEach(dataset => {
-            dataset.pointRadius = newRadius; // Измените радиус точек
-        });
-        archiveChart.update(); // Обновите график
-    }
-
-    // Управляем видимостью div
-    div.style.display = checkbox.checked ? "flex" : "none";
+// Обработчик события для кнопки
+toggleRadiusButton.addEventListener('click', function() {
+    passwordModal.style.display = "flex"; // Показываем модальное окно
 });
 
+// Обработчик события для кнопки подтверждения
+submitPasswordButton.addEventListener('click', function() {
+    const userPassword = passwordInput.value; // Получаем введенный пароль
+
+    // Проверяем, верен ли пароль
+    if (userPassword === correctPassword) {
+        hiddenDiv.style.display = "flex"; // Показываем div
+        passwordModal.style.display = "none"; // Скрываем модальное окно
+
+        // Переключаем состояние радиуса
+        isRadiusVisible = !isRadiusVisible;
+
+        // Изменяем радиус точек в зависимости от состояния
+        const newRadius = isRadiusVisible ? 2 : 0; // Если радиус видим, радиус 2, иначе 0
+        if (archiveChart) {
+            archiveChart.data.datasets.forEach(dataset => {
+                dataset.pointRadius = newRadius; // Измените радиус точек
+            });
+            archiveChart.update(); // Обновите график
+        }
+    } else {
+        alert("Неверный пароль!"); // Сообщаем об ошибке
+        passwordInput.value = ""; // Очищаем поле ввода
+    }
+});
+
+// Обработчик события для кнопки отмены
+cancelPasswordButton.addEventListener('click', function() {
+    passwordModal.style.display = "none"; // Скрываем модальное окно
+    passwordInput.value = ""; // Очищаем поле ввода
+});
 
 /*--------------------------------------------------------------------------*/
+
 function handleSelectedFile(event, path) {
     const filePathElement = document.getElementById('file-path');
     filePathElement.innerText = `файл: ${path}`;

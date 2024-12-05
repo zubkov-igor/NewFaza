@@ -29,9 +29,8 @@
                             </button></a>
                         <button class="block-item_button" id="csvFile">Открыть CSV файл</button>
                         <button class="block-item_button" id="save">Сохранить как PNG</button>
-                        <label>
-                            <input type="checkbox" id="toggleRadius" />
-                        </label>
+                
+<button class="block-item_button" id="toggleRadiusButton">Редактирование</button>
                         <div id="file-path"></div>
                     </div>
                     <div class="block__main">
@@ -104,6 +103,16 @@
 </script>
 
     <script src="scripts/archive.js" defer></script>
+
+<div id="passwordModal" style="display:none;">
+    <div id="modalContent">
+        <h2>Введите пароль</h2>
+        <input type="password" id="passwordInput" placeholder="Пароль">
+        <button id="submitPassword">Подтвердить</button>
+        <button id="cancelPassword">Отмена</button>
+    </div>
+</div>
+
 </body>
 
 </html>
