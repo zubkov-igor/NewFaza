@@ -311,7 +311,15 @@ toggleRadiusCheckbox.addEventListener('change', function() {
         hiddenDiv.style.display = "none"; 
     } else {
         hiddenDiv.style.display = "none"; // Скрываем div, если чекбокс не активен
-        passwordModal.style.display = "none"; // Скрываем модальное окно, если чекбокс не активен
+        isRadiusVisible = false; // Сбрасываем состояние видимости радиуса
+
+        // Убираем точки на графике
+        if (archiveChart) {
+            archiveChart.data.datasets.forEach(dataset => {
+                dataset.pointRadius = 0; // Убираем радиус точек
+            });
+            archiveChart.update(); // Обновляем график
+        }
     }
 });
 
@@ -348,6 +356,14 @@ cancelPasswordButton.addEventListener('click', function() {
     passwordInput.value = ""; // Очищаем поле ввода
     toggleRadiusCheckbox.checked = false; // Сбрасываем чекбокс
     hiddenDiv.style.display = "none"; // Скрываем div при отмене
+
+    // Убираем точки на графике
+    if (archiveChart) {
+        archiveChart.data.datasets.forEach(dataset => {
+            dataset.pointRadius = 0; // Убираем радиус точек
+        });
+        archiveChart.update(); // Обновляем график
+    }
 });
 
 
