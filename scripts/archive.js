@@ -624,5 +624,3 @@ function handleSelectedFile(event, path) {
             document.getElementById('spinner').style.display = 'none';
         });
 }
-
-
