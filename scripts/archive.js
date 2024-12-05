@@ -292,6 +292,7 @@ ipcRenderer.on('save-data-response', (event, {
 Chart.register(clientInfoPlugin);
 
 /*--------------------------------------------------------------------------*/
+
 const toggleRadiusCheckbox = document.getElementById('toggleRadius');
 const hiddenDiv = document.getElementById("hidden");
 const passwordModal = document.getElementById("passwordModal");
@@ -308,6 +309,9 @@ toggleRadiusCheckbox.addEventListener('change', function() {
     if (toggleRadiusCheckbox.checked) {
         passwordModal.style.display = "flex"; 
         hiddenDiv.style.display = "none"; 
+    } else {
+        hiddenDiv.style.display = "none"; // Скрываем div, если чекбокс не активен
+        passwordModal.style.display = "none"; // Скрываем модальное окно, если чекбокс не активен
     }
 });
 
@@ -343,6 +347,7 @@ cancelPasswordButton.addEventListener('click', function() {
     passwordModal.style.display = "none"; // Скрываем модальное окно
     passwordInput.value = ""; // Очищаем поле ввода
     toggleRadiusCheckbox.checked = false; // Сбрасываем чекбокс
+    hiddenDiv.style.display = "none"; // Скрываем div при отмене
 });
 
 
