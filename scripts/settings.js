@@ -74,10 +74,25 @@ function getUpdatedData() {
 
 document.getElementById('saveButton').addEventListener('click', () => {
   const updatedData = getUpdatedData();
+  
+  // Проверка на наличие хотя бы одного активного чекбокса
+  const hasActiveCheckbox = Object.values(updatedData).some(item => item.active === 1);
+
+  const messageDiv = document.getElementById('message');
+
+  if (!hasActiveCheckbox) {
+    // Выводим сообщение в messageDiv вместо alert
+    messageDiv.innerText = 'Пожалуйста, выберите хотя бы один активный чекбокс перед сохранением.';
+    messageDiv.style.color = 'red'; // Устанавливаем цвет текста
+    return; // Прерываем выполнение, если нет активных чекбоксов
+  }
+
+  // Если есть хотя бы один активный чекбокс, продолжаем запись в файл
   fs.writeFileSync('settings/settings.json', JSON.stringify(updatedData, null, 2));
   ipcRenderer.send('save-json', updatedData);
 });
 
+// Обработчик ответа от ipcRenderer
 ipcRenderer.on('save-json-reply', (event, arg) => {
   const messageDiv = document.getElementById('message');
   messageDiv.innerText = arg.message;
