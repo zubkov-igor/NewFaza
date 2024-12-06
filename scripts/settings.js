@@ -29,7 +29,7 @@ function displayDataInTable(dataTable) {
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.className = 'check_box';
+    checkbox.className = 'check__input';
     checkbox.checked = dataTable[key]?.active === 1; 
     cell1.appendChild(checkbox);
     checkboxes[key] = checkbox;

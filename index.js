@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, screen} = require('electron');
 const ModbusRTU = require('modbus-serial');
 const fs = require('fs');
 const path = require('path');

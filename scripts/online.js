@@ -273,7 +273,7 @@ function convertInputsToCSV() {
 
     // Создаем массив строк CSV
     const csvData = [
-        ['Заказчик', 'Куст', 'Скважина', 'Название работы', 'Дата'],
+        ['Client', 'Bush', 'Well', 'Work', 'Data'],
                 [client, bush, well, nameWork, formattedDate]
     ];
     
@@ -367,7 +367,17 @@ document.getElementById('stopButton').addEventListener('click', async () => {
 
         // Записываем данные в заранее указанный CSV-файл
         const dataToWrite = onlineChart.data.labels.map((label, index) => {
-            const row = [label];
+            // Создаем строку, начиная с 6 колонки
+            const row = [
+                '', // Пустая колонка для Client
+                '', // Пустая колонка для Bush
+                '', // Пустая колонка для Well
+                '', // Пустая колонка для Work
+                '', // Пустая колонка для Data
+                label, // Время из меток графика
+            ];
+
+            // Добавляем данные из наборов данных (datasets) начиная с 7 колонки
             onlineChart.data.datasets.forEach(dataset => {
                 row.push(dataset.data[index] !== undefined ? dataset.data[index] : '');
             });
