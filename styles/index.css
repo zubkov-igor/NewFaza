@@ -306,6 +306,10 @@ body {
     text-shadow: 0 -1px #8696dc, 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
+.start-button:disabled {
+    cursor: not-allowed; 
+}
+
 .stop-button {
     padding: 0 15px;
     line-height: 35px;
@@ -353,6 +357,9 @@ body {
     text-shadow: 0 -1px #db6e69, 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
+.stop-button:disabled {
+  cursor: not-allowed; 
+}
 
 #archive,
 #online {

@@ -280,10 +280,23 @@ function convertInputsToCSV() {
     return csvData.map(row => row.join(',')).join('\n');
 }
 
-// Объявление функции
+// Функция для проверки заполненности всех полей
+function checkInputs() {
+    const inputs = document.querySelectorAll('.form-input');
+    const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
+    
+    document.getElementById('startButton').disabled = !allFilled;
+    document.getElementById('stopButton').disabled = !allFilled;
+}
+
+// Добавляем обработчики событий для каждого поля ввода
+document.querySelectorAll('.form-input').forEach(input => {
+    input.addEventListener('input', checkInputs);
+});
+
 async function saveChartDataToCSV() {
     const csvData = convertInputsToCSV();
-    
+
     if (!csvData) {
         const messageElement = document.getElementById('message');
         messageElement.textContent = 'Пожалуйста, заполните все поля перед началом.';
@@ -311,6 +324,8 @@ async function saveChartDataToCSV() {
         messageElement.style.display = 'inline';
     }
 }
+
+
 // Функция для записи данных в CSV
 async function writeDataToCSV(dataToWrite) {
     try {
@@ -338,13 +353,17 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         // Останавливаем обновление графика
         isChartRunning = false;
 
-        // Clear the interval to stop chart updates
+        // Очистка интервала для остановки обновлений графика
         clearInterval(updateInterval);
 
         // Восстанавливаем активность input и кнопки "Применить"
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => input.disabled = false);
         document.getElementById('apply').disabled = false;
+
+        // Восстанавливаем состояние кнопки "Стоп"
+        const stopButton = document.getElementById('stopButton');
+        stopButton.disabled = false; // Убедитесь, что вы отключаете режим disabled
 
         // Записываем данные в заранее указанный CSV-файл
         const dataToWrite = onlineChart.data.labels.map((label, index) => {
@@ -368,8 +387,16 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         messageElement.style.color = 'green';
         messageElement.style.display = 'inline';
 
+        // Отключаем клиента Modbus
+        try {
+            await client.close();
+            console.log('Соединение с Modbus закрыто.');
+        } catch (error) {
+            console.error('Ошибка при закрытии соединения с Modbus:', error);
+        }
     }
 });
+
 
 // Добавление обработчика события
 document.getElementById('apply').addEventListener('click', saveChartDataToCSV);
