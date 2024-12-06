@@ -15,6 +15,7 @@ const {
     Legend,
     Tooltip
 } = chartjs;
+
 Chart.register([LinearScale, LineController, CategoryScale, PointElement, LineElement, Legend, Tooltip]);
 
 let onlineChart;
@@ -25,6 +26,7 @@ const datasets = [];
 let isChartRunning = false; // Флаг для отслеживания состояния графика
 const statusButton = document.getElementById('statusButton');
 let csvFilePath = ''; // Переменная для хранения пути к CSV-файлу
+let writeHead = true; // Объявление переменной для заголовка CSV
 
 // Загрузка конфигурации графиков
 try {
@@ -45,7 +47,8 @@ function updateButtonColor(isConnected) {
 // Подключение к устройству Modbus TCP
 async function connectModbus() {
     try {
-        await client.connectTCP("186.168.65.6", { port: 502 });
+       // await client.connectTCP("186.168.65.6", { port: 502 });
+        await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         updateButtonColor(true);
     } catch (error) {
@@ -159,7 +162,7 @@ function updateChartAxes(chart) {
     chart.update();
 }
 
-let updateInterval; // Declare a variable to hold the interval ID
+let updateInterval;
 
 // Обработчик события "Старт"
 function startChart() {
@@ -213,12 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
         grid: {
             display: false
         }
-
     });
 
-    // Disable the start button initially
+    // Disable the start button and stop button initially
     const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
     startButton.disabled = true;
+    stopButton.disabled = true; // Добавлено отключение кнопки "Стоп"
 
     // Add event listeners to input fields to check if they are filled
     const inputFields = ['client', 'bush', 'well', 'name_work'];
@@ -230,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startButton.addEventListener('click', startChart);
 });
 
-// Function to check if all required fields are filled
+// Функция для проверки, заполнены ли все необходимые поля
 function checkFields() {
     const client = document.getElementById('client').value;
     const bush = document.getElementById('bush').value;
@@ -238,14 +242,17 @@ function checkFields() {
     const nameWork = document.getElementById('name_work').value;
 
     const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton'); // Получаем элемент кнопки "Стоп"
     const messageElement = document.getElementById('message'); // Get the message element
 
-    // Enable or disable the start button based on field values
+    // Enable or disable the start button and stop button based on field values
     if (client && bush && well && nameWork) {
         startButton.disabled = false;
+        stopButton.disabled = false; // Убираем disabled с кнопки "Стоп"
         messageElement.style.display = 'none'; // Hide the message if all fields are filled
     } else {
         startButton.disabled = true;
+        stopButton.disabled = true; // Снова устанавливаем disabled на кнопку "Стоп"
         messageElement.textContent = 'Пожалуйста, заполните все поля перед началом.';
         messageElement.style.color = 'red';
         messageElement.style.display = 'inline'; // Show the message
@@ -274,29 +281,16 @@ function convertInputsToCSV() {
     // Создаем массив строк CSV
     const csvData = [
         ['Client', 'Bush', 'Well', 'Work', 'Data'],
-                [client, bush, well, nameWork, formattedDate]
+        [client, bush, well, nameWork, formattedDate]
     ];
     
     return csvData.map(row => row.join(',')).join('\n');
 }
 
-// Функция для проверки заполненности всех полей
-function checkInputs() {
-    const inputs = document.querySelectorAll('.form-input');
-    const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
-    
-    document.getElementById('startButton').disabled = !allFilled;
-    document.getElementById('stopButton').disabled = !allFilled;
-}
-
-// Добавляем обработчики событий для каждого поля ввода
-document.querySelectorAll('.form-input').forEach(input => {
-    input.addEventListener('input', checkInputs);
-});
-
+// Объявление функции
 async function saveChartDataToCSV() {
     const csvData = convertInputsToCSV();
-
+    
     if (!csvData) {
         const messageElement = document.getElementById('message');
         messageElement.textContent = 'Пожалуйста, заполните все поля перед началом.';
@@ -325,25 +319,25 @@ async function saveChartDataToCSV() {
     }
 }
 
-
 // Функция для записи данных в CSV
-async function writeDataToCSV(dataToWrite) {
+async function writeDataToCSV(dataMap) {
     try {
-        // Check if the file path is set
         if (!csvFilePath) {
             throw new Error('Путь к файлу не установлен.');
         }
 
-        // Write the CSV data to the specified file
-        fs.appendFile(csvFilePath, dataToWrite + '\n', 'utf8', (err) => {
-            if (err) {
-                console.error('Ошибка при записи в файл:', err);
-                throw err;
-            }
-        });
+        // Получаем текущее время
+        const currentTime = new Date().toLocaleTimeString();
+
+        // Формируем строки данных
+        const csvData = Object.values(dataMap).map(value => {
+            return `,,,,,${currentTime},${value}`; // Пять пустых колонок, текущее время и значение
+        }).join('\n');
+
+        // Записываем только данные в файл
+        fs.appendFileSync(csvFilePath, csvData + '\n', { encoding: 'utf8' });
     } catch (error) {
-        console.error('Ошибка в writeDataToCSV:', error);
-        throw error; // Rethrow the error to be handled in the calling function
+        console.error('Ошибка при записи в файл:', error);
     }
 }
 
@@ -353,7 +347,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         // Останавливаем обновление графика
         isChartRunning = false;
 
-        // Очистка интервала для остановки обновлений графика
+        // Clear the interval to stop chart updates
         clearInterval(updateInterval);
 
         // Восстанавливаем активность input и кнопки "Применить"
@@ -361,23 +355,9 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         inputs.forEach(input => input.disabled = false);
         document.getElementById('apply').disabled = false;
 
-        // Восстанавливаем состояние кнопки "Стоп"
-        const stopButton = document.getElementById('stopButton');
-        stopButton.disabled = false; // Убедитесь, что вы отключаете режим disabled
-
         // Записываем данные в заранее указанный CSV-файл
         const dataToWrite = onlineChart.data.labels.map((label, index) => {
-            // Создаем строку, начиная с 6 колонки
-            const row = [
-                '', // Пустая колонка для Client
-                '', // Пустая колонка для Bush
-                '', // Пустая колонка для Well
-                '', // Пустая колонка для Work
-                '', // Пустая колонка для Data
-                label, // Время из меток графика
-            ];
-
-            // Добавляем данные из наборов данных (datasets) начиная с 7 колонки
+            const row = [label];
             onlineChart.data.datasets.forEach(dataset => {
                 row.push(dataset.data[index] !== undefined ? dataset.data[index] : '');
             });
@@ -396,17 +376,8 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
         messageElement.style.color = 'green';
         messageElement.style.display = 'inline';
-
-        // Отключаем клиента Modbus
-        try {
-            await client.close();
-            console.log('Соединение с Modbus закрыто.');
-        } catch (error) {
-            console.error('Ошибка при закрытии соединения с Modbus:', error);
-        }
     }
 });
-
 
 // Добавление обработчика события
 document.getElementById('apply').addEventListener('click', saveChartDataToCSV);
