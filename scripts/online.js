@@ -280,7 +280,7 @@ function convertInputsToCSV() {
 
     // Создаем массив строк CSV
     const csvData = [
-        ['Client', 'Bush', 'Well', 'Work', 'Data'],
+        ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'],
         [client, bush, well, nameWork, formattedDate]
     ];
     
@@ -319,6 +319,9 @@ async function saveChartDataToCSV() {
     }
 }
 
+// Объявление переменной для отслеживания времени
+let currentTimeInSeconds = Math.floor(Date.now() / 1000); // Текущее время в секундах
+
 // Функция для записи данных в CSV
 async function writeDataToCSV(dataMap) {
     try {
@@ -326,12 +329,16 @@ async function writeDataToCSV(dataMap) {
             throw new Error('Путь к файлу не установлен.');
         }
 
-        // Получаем текущее время
-        const currentTime = new Date().toLocaleTimeString();
-
         // Формируем строки данных
         const csvData = Object.values(dataMap).map(value => {
-            return `,,,,,${currentTime},${value}`; // Пять пустых колонок, текущее время и значение
+            // Преобразуем текущее время в формат HH:MM:SS
+            const date = new Date(currentTimeInSeconds * 1000);
+            const formattedTime = date.toLocaleTimeString();
+
+            // Увеличиваем текущее время на секунду
+            currentTimeInSeconds++;
+
+            return `,,,,,${formattedTime},${value}`; // Пять пустых колонок, текущее время и значение
         }).join('\n');
 
         // Записываем только данные в файл
