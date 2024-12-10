@@ -379,6 +379,8 @@ document.getElementById('stopButton').addEventListener('click', async () => {
     }
 });
 
+/*---------------------------------------------------------------------------------------------*/
+
 // Добавление обработчика события
 document.getElementById('apply').addEventListener('click', saveChartDataToCSV);
 
@@ -389,10 +391,4 @@ ipcRenderer.on('display-message', (event, message, filePath) => {
     messageElement.style.color = 'green';
     messageElement.style.display = 'inline';
     messageElement.classList.remove('hide'); 
-    setTimeout(() => {
-        messageElement.classList.add('hide');
-        setTimeout(() => {
-            messageElement.style.display = 'none';
-        }, 500);
-    }, 60000);
 });
