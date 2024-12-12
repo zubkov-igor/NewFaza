@@ -35,6 +35,7 @@ if (!gotTheLock) {
         mainWindow.setMenu(null);
         mainWindow.loadFile('index.html');
         mainWindow.webContents.openDevTools();
+		win.maximize();
     }
 
     app.whenReady().then(createWindow);

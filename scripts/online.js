@@ -53,6 +53,7 @@ async function connectModbus() {
         updateButtonColor(true);
     } catch (error) {
         console.log('Ошибка подключения:', error);
+        isConnected = false;
         updateButtonColor(false);
     }
 }
@@ -89,7 +90,6 @@ async function readModbusData(client, address) {
     }
 }
 
-// Функция для обновления графика с данными Modbus 
 async function updateChartWithModbusData(chart, client) {
     const dataMap = {
         'ДавЛевНас': await readModbusData(client, 500),
@@ -104,6 +104,7 @@ async function updateChartWithModbusData(chart, client) {
         'РасходВоды': await readModbusData(client, 518),
         'Плотность': await readModbusData(client, 520),
     };
+
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
             let dataset = chart.data.datasets.find(ds => ds.label === chartName);
@@ -115,14 +116,27 @@ async function updateChartWithModbusData(chart, client) {
                     data: [dataMap[chartName]],
                     backgroundColor: chartConfig[chartName].color,
                     borderColor: chartConfig[chartName].color,
-                    fill: false
+                    fill: false,
+                    yAxisID: chartName
                 });
             }
         }
     }
+
     updateChartAxes(chart);
     chart.update();
 }
+
+function updateChartAxes(chart) {
+    chart.options.scales = {}; // Очищаем текущие оси 
+    for (const chartName in chartConfig) {
+        if (shouldDrawChart(chartName)) {
+            chart.options.scales[chartName] = createYAxis(chart, chartName);
+        }
+    }
+    chart.update();
+}
+
 
 // Функция для проверки, следует ли рисовать график
 function shouldDrawChart(chartName) {
@@ -147,20 +161,13 @@ function createYAxis(chart, chartName) {
         },
         grid: {
             display: false
-        }
+        },
+        id: chartName
     };
 }
 
-// Обновление осей Y на основе активных графиков
-function updateChartAxes(chart) {
-    chart.options.scales = {}; // Очищаем текущие оси 
-    for (const chartName in chartConfig) {
-        if (shouldDrawChart(chartName)) {
-            chart.options.scales[chartName] = createYAxis(chart, chartName);
-        }
-    }
-    chart.update();
-}
+
+
 
 let updateInterval;
 
@@ -330,7 +337,12 @@ async function writeDataToCSV(dataMap) {
         }
 
         // Формируем строки данных
-        const csvData = Object.values(dataMap).map(value => {
+        const csvData = Object.values(dataMap).map((value, index) => {
+            // Пропускаем первую строку
+            if (index === 0) {
+                return '';
+            }
+
             // Преобразуем текущее время в формат HH:MM:SS
             const date = new Date(currentTimeInSeconds * 1000);
             const formattedTime = date.toLocaleTimeString();
@@ -347,7 +359,6 @@ async function writeDataToCSV(dataMap) {
         console.error('Ошибка при записи в файл:', error);
     }
 }
-
 // Обработчик события "Стоп"
 document.getElementById('stopButton').addEventListener('click', async () => {
     if (isChartRunning) {
