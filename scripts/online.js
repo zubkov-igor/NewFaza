@@ -129,11 +129,14 @@ async function updateChartWithModbusData(chart, client) {
 
 function updateChartAxes(chart) {
     chart.options.scales = {}; // Очищаем текущие оси 
+    let i = 0;
     for (const chartName in chartConfig) {
         if (shouldDrawChart(chartName)) {
-            chart.options.scales[chartName] = createYAxis(chart, chartName);
+            chart.options.scales[chartName] = createYAxis(chart, chartName, i);
+            i++;
         }
     }
+    chart.options.animation.duration = 0; // Отключаем анимацию для более быстрой обновляемости
     chart.update();
 }
 
@@ -144,8 +147,8 @@ function shouldDrawChart(chartName) {
 }
 
 // Функция для создания осей Y на основе конфигурации
-function createYAxis(chart, chartName) {
-    const max = chartConfig[chartName].max || 100;
+function createYAxis(chart, chartName, index) {
+    const max = chartConfig[chartName].max || 500;
     return {
         type: 'linear',
         position: 'left',
@@ -165,9 +168,6 @@ function createYAxis(chart, chartName) {
         id: chartName
     };
 }
-
-
-
 
 let updateInterval;
 
