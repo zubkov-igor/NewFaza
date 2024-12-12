@@ -266,6 +266,8 @@ function checkFields() {
     }
 }
 
+/*---------------------------------------------------------------------------------------*/
+
 // Функция для преобразования данных в формат CSV
 function convertInputsToCSV() {
     const client = document.getElementById('client').value;
@@ -331,34 +333,52 @@ let currentTimeInSeconds = Math.floor(Date.now() / 1000); // Текущее вр
 
 // Функция для записи данных в CSV
 async function writeDataToCSV(dataMap) {
-    try {
-        if (!csvFilePath) {
-            throw new Error('Путь к файлу не установлен.');
-        }
-
-        // Формируем строки данных
-        const csvData = Object.values(dataMap).map((value, index) => {
-            // Пропускаем первую строку
-            if (index === 0) {
-                return '';
-            }
-
-            // Преобразуем текущее время в формат HH:MM:SS
-            const date = new Date(currentTimeInSeconds * 1000);
-            const formattedTime = date.toLocaleTimeString();
-
-            // Увеличиваем текущее время на секунду
-            currentTimeInSeconds++;
-
-            return `,,,,,${formattedTime},${value}`; // Пять пустых колонок, текущее время и значение
-        }).join('\n');
-
-        // Записываем только данные в файл
-        fs.appendFileSync(csvFilePath, csvData + '\n', { encoding: 'utf8' });
-    } catch (error) {
-        console.error('Ошибка при записи в файл:', error);
+  try {
+    if (!csvFilePath) {
+      throw new Error('Путь к файлу не установлен.');
     }
+
+    // Формируем строки данных
+    const csvData = Object.values(dataMap).map((value, index) => {
+      // Преобразуем текущее время в формат HH:MM:SS
+      const date = new Date(currentTimeInSeconds * 1000);
+      const formattedTime = date.toLocaleTimeString();
+
+      // Увеличиваем текущее время на секунду
+      currentTimeInSeconds++;
+
+      // Формируем строку данных в нужном формате
+      const row = [
+        '',
+        '',
+        '',
+        '',
+        '',
+        formattedTime,
+        value.ДавПравНас,
+        value.ДавВыход,
+
+      ].join(',');
+
+      return row;
+    }).join('\n');
+
+    // Записываем данные в файл
+    const client = document.getElementById('client').value;
+    const bush = document.getElementById('bush').value;
+    const well = document.getElementById('well').value;
+    const nameWork = document.getElementById('name_work').value;
+
+    const header = `Client,Bush,Well,Work,Data,Time,ДавПравНас,ДавВыход\n`;
+    const firstRow = `${client},${bush},${well},${nameWork},${new Date().toLocaleTimeString()}\n`;
+    const fullCsvData = header + firstRow + csvData;
+
+    fs.writeFileSync(csvFilePath, fullCsvData, { encoding: 'utf8' });
+  } catch (error) {
+    console.error('Ошибка при записи в файл:', error);
+  }
 }
+
 // Обработчик события "Стоп"
 document.getElementById('stopButton').addEventListener('click', async () => {
     if (isChartRunning) {
