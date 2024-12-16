@@ -387,77 +387,73 @@ async function updateChartWithModbusData(chart, client) {
 
 /*---------------------------------------------------------------------------------*/
 
-async function writeDataToCSV(client, bush, well, work, dataMap, isFirstRow) {
+let isHeaderWritten = false; // Flag to track if the header has been written
+
+async function writeDataToCSV(client, bush, well, work, dataMap) {
     try {
         const fileExists = fs.existsSync(csvFilePath);
 
-        // Если файл не существует, создаем заголовок
+        // Define headers based on the dataMap keys
+        const headers = [
+            'Client', 'Bush', 'Well', 'Work', 'Data', 'Time',
+            ...Object.keys(dataMap) // Dynamically add Modbus data keys as headers
+        ];
+
+        // Write header only if the file does not exist
         if (!fileExists) {
-            const header = ['Client', 'Bush', 'Well', 'Work', 'Data', 
-                'Time', 'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
-                'РасходЛевНас', 'РасходПравНас', 'РасходВыход', 
-                'ТемпРецирк', 'ДавРецирк', 'ОбъемВыход', 
-                'РасходВоды', 'Плотность'];
-            fs.writeFileSync(csvFilePath, header.join(',') + '\n');
+            fs.writeFileSync(csvFilePath, headers.join(',') + '\n');
         }
 
-        const currentTime = new Date().toLocaleTimeString(); // Получаем только время
-        const dataDate = isFirstRow ? new Date().toLocaleString() : ''; // Записываем дату только в первой строке
+        const currentTime = new Date().toLocaleTimeString(); // Get current time
+        const dataDate = new Date().toLocaleDateString('ru-RU'); // Get current date in DD.MM.YYYY format
 
-        // Формируем строку данных
+        // Create data row
         let row;
-        if (isFirstRow) {
-            // Если это первая строка, заполняем все данные
+
+        if (!isHeaderWritten) {
+            // First row with client information and date
             row = [
                 client || '',
                 bush || '',
                 well || '',
                 work || '',
-                dataDate, // Дата только для первой строки
-                currentTime, // Время
-                dataMap['ДавЛевНас'] || '',
-                dataMap['ДавПравНас'] || '',
-                dataMap['ДавВыход'] || '',
-                dataMap['РасходЛевНас'] || '',
-                dataMap['РасходПравНас'] || '',
-                dataMap['РасходВыход'] || '',
-                dataMap['ТемпРецирк'] || '',
-                dataMap['ДавРецирк'] || '',
-                dataMap['ОбъемВыход'] || '',
-                dataMap['РасходВоды'] || '',
-                dataMap['Плотность'] || ''
+                dataDate, // Date in DD.MM.YYYY format
+                currentTime // Time
             ];
+
+            // Add Modbus data values for the first row
+            for (const chartName in dataMap) {
+                if (shouldDrawChart(chartName)) {
+                    row.push(dataMap[chartName] || ''); // Add value or empty string if undefined
+                }
+            }
+
+            isHeaderWritten = true; // Set the flag to true after writing the first row
         } else {
-            // Если это не первая строка, первые пять колонок пустые
+            // Subsequent rows with empty values for the first five columns
             row = [
-                '', '', '', '', '', // Пустые значения для первых пяти колонок
-                '', // Дата пустая для последующих строк
-                currentTime, // Время
-                dataMap['ДавЛевНас'] || '',
-                dataMap['ДавПравНас'] || '',
-                dataMap['ДавВыход'] || '',
-                dataMap['РасходЛевНас'] || '',
-                dataMap['РасходПравНас'] || '',
-                dataMap['РасходВыход'] || '',
-                dataMap['ТемпРецирк'] || '',
-                dataMap['ДавРецирк'] || '',
-                dataMap['ОбъемВыход'] || '',
-                dataMap['РасходВоды'] || '',
-                dataMap['Плотность'] || ''
+                '', '', '', '', '', // Empty values for Client, Bush, Well, Work, Data
+                currentTime // Time
             ];
+
+            // Add Modbus data values for subsequent rows
+            for (const chartName in dataMap) {
+                if (shouldDrawChart(chartName)) {
+                    row.push(dataMap[chartName] || ''); // Add value or empty string if undefined
+                }
+            }
         }
 
-        // Логируем строку перед записью
+        // Log the row before writing
         console.log('Writing to CSV:', row);
 
-        // Записываем строку в файл
+        // Append the row to the CSV file
         fs.appendFileSync(csvFilePath, row.join(',') + '\n');
         console.log('Data successfully written to CSV file.');
     } catch (error) {
         console.error('Error writing to CSV file:', error);
     }
 }
-
 
 /*------------------------------------------------------------------------------------*/
 
