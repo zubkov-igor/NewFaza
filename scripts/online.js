@@ -27,6 +27,7 @@ let isChartRunning = false; // Флаг для отслеживания сост
 const statusButton = document.getElementById('statusButton');
 let csvFilePath = ''; // Переменная для хранения пути к CSV-файлу
 let writeHead = true; // Объявление переменной для заголовка CSV
+let updateInterval;
 
 // Загрузка конфигурации графиков
 try {
@@ -83,7 +84,7 @@ async function readModbusData(client, address) {
         buf[1] = data.data[0] >> 8;
         buf[2] = data.data[1] & 0xFF;
         buf[3] = data.data[1] >> 8;
-        return buf.readFloatLE(0);
+        return buf.readFloatLE(0).toFixed(2);
     } catch (error) {
         console.error('Ошибка чтения данных Modbus:', error);
         return null;
@@ -168,8 +169,6 @@ function createYAxis(chart, chartName, index) {
         id: chartName
     };
 }
-
-let updateInterval;
 
 // Обработчик события "Старт"
 function startChart() {
@@ -289,14 +288,13 @@ function convertInputsToCSV() {
 
     // Создаем массив строк CSV
     const csvData = [
-        ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'],
+        ['Client', 'Bush', 'Well', 'Work', 'Data'],
         [client, bush, well, nameWork, formattedDate]
     ];
     
     return csvData.map(row => row.join(',')).join('\n');
 }
 
-// Объявление функции
 async function saveChartDataToCSV() {
     const csvData = convertInputsToCSV();
     
@@ -311,7 +309,7 @@ async function saveChartDataToCSV() {
     try {
         const userSelectedPath = await ipcRenderer.invoke('show-save-dialog');
         if (userSelectedPath) {
-            csvFilePath = userSelectedPath;
+            csvFilePath = userSelectedPath; // Инициализация переменной
         }
 
         // Сохраняем данные в csvFilePath
@@ -331,53 +329,206 @@ async function saveChartDataToCSV() {
 // Объявление переменной для отслеживания времени
 let currentTimeInSeconds = Math.floor(Date.now() / 1000); // Текущее время в секундах
 
-// Функция для записи данных в CSV
-async function writeDataToCSV(dataMap) {
-  try {
-    if (!csvFilePath) {
-      throw new Error('Путь к файлу не установлен.');
+async function updateChartWithModbusData(chart, client) {
+    const dataMap = {
+        'ДавЛевНас': await readModbusData(client, 500),
+        'ДавПравНас': await readModbusData(client, 502),
+        'ДавВыход': await readModbusData(client, 504),
+        'РасходЛевНас': await readModbusData(client, 506),
+        'РасходПравНас': await readModbusData(client, 508),
+        'РасходВыход': await readModbusData(client, 510),
+        'ТемпРецирк': await readModbusData(client, 512),
+        'ДавРецирк': await readModbusData(client, 514),
+        'ОбъемВыход': await readModbusData(client, 516),
+        'РасходВоды': await readModbusData(client, 518),
+        'Плотность': await readModbusData(client, 520),
+    };
+
+    // Log the retrieved Modbus data
+    console.log('Retrieved Modbus Data:', dataMap);
+
+    // Проверяем, что dataMap определен и содержит данные
+    if (!dataMap || Object.values(dataMap).some(value => value === null)) {
+        console.error('dataMap is undefined or contains null values, не могу записать данные в CSV');
+        return; // Завершаем выполнение функции, если dataMap недоступен
     }
 
-    // Формируем строки данных
-    const csvData = Object.values(dataMap).map((value, index) => {
-      // Преобразуем текущее время в формат HH:MM:SS
-      const date = new Date(currentTimeInSeconds * 1000);
-      const formattedTime = date.toLocaleTimeString();
+    // Получаем значения для client, bush, well и work
+    const clientValue = document.getElementById('client').value;
+    const bushValue = document.getElementById('bush').value;
+    const wellValue = document.getElementById('well').value;
+    const workValue = document.getElementById('name_work').value;
 
-      // Увеличиваем текущее время на секунду
-      currentTimeInSeconds++;
+    // Записываем данные в CSV
+    await writeDataToCSV(clientValue, bushValue, wellValue, workValue, dataMap);
 
-      // Формируем строку данных в нужном формате
-      const row = [
-        '',
-        '',
-        '',
-        '',
-        '',
-        formattedTime,
-        value.ДавПравНас,
-        value.ДавВыход,
+    for (const chartName in dataMap) {
+        if (shouldDrawChart(chartName)) {
+            let dataset = chart.data.datasets.find(ds => ds.label === chartName);
+            if (dataset) {
+                dataset.data.push(dataMap[chartName]);
+            } else {
+                chart.data.datasets.push({
+                    label: chartName,
+                    data: [dataMap[chartName]],
+                    backgroundColor: chartConfig[chartName].color,
+                    borderColor: chartConfig[chartName].color,
+                    fill: false,
+                    yAxisID: chartName
+                });
+            }
+        }
+    }
 
-      ].join(',');
-
-      return row;
-    }).join('\n');
-
-    // Записываем данные в файл
-    const client = document.getElementById('client').value;
-    const bush = document.getElementById('bush').value;
-    const well = document.getElementById('well').value;
-    const nameWork = document.getElementById('name_work').value;
-
-    const header = `Client,Bush,Well,Work,Data,Time,ДавПравНас,ДавВыход\n`;
-    const firstRow = `${client},${bush},${well},${nameWork},${new Date().toLocaleTimeString()}\n`;
-    const fullCsvData = header + firstRow + csvData;
-
-    fs.writeFileSync(csvFilePath, fullCsvData, { encoding: 'utf8' });
-  } catch (error) {
-    console.error('Ошибка при записи в файл:', error);
-  }
+    updateChartAxes(chart);
+    chart.update();
 }
+
+
+/*---------------------------------------------------------------------------------*/
+
+async function writeDataToCSV(client, bush, well, work, dataMap, isFirstRow) {
+    try {
+        const fileExists = fs.existsSync(csvFilePath);
+
+        // Если файл не существует, создаем заголовок
+        if (!fileExists) {
+            const header = ['Client', 'Bush', 'Well', 'Work', 'Data', 
+                'Time', 'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
+                'РасходЛевНас', 'РасходПравНас', 'РасходВыход', 
+                'ТемпРецирк', 'ДавРецирк', 'ОбъемВыход', 
+                'РасходВоды', 'Плотность'];
+            fs.writeFileSync(csvFilePath, header.join(',') + '\n');
+        }
+
+        const currentTime = new Date().toLocaleTimeString(); // Получаем только время
+        const dataDate = isFirstRow ? new Date().toLocaleString() : ''; // Записываем дату только в первой строке
+
+        // Формируем строку данных
+        let row;
+        if (isFirstRow) {
+            // Если это первая строка, заполняем все данные
+            row = [
+                client || '',
+                bush || '',
+                well || '',
+                work || '',
+                dataDate, // Дата только для первой строки
+                currentTime, // Время
+                dataMap['ДавЛевНас'] || '',
+                dataMap['ДавПравНас'] || '',
+                dataMap['ДавВыход'] || '',
+                dataMap['РасходЛевНас'] || '',
+                dataMap['РасходПравНас'] || '',
+                dataMap['РасходВыход'] || '',
+                dataMap['ТемпРецирк'] || '',
+                dataMap['ДавРецирк'] || '',
+                dataMap['ОбъемВыход'] || '',
+                dataMap['РасходВоды'] || '',
+                dataMap['Плотность'] || ''
+            ];
+        } else {
+            // Если это не первая строка, первые пять колонок пустые
+            row = [
+                '', '', '', '', '', // Пустые значения для первых пяти колонок
+                '', // Дата пустая для последующих строк
+                currentTime, // Время
+                dataMap['ДавЛевНас'] || '',
+                dataMap['ДавПравНас'] || '',
+                dataMap['ДавВыход'] || '',
+                dataMap['РасходЛевНас'] || '',
+                dataMap['РасходПравНас'] || '',
+                dataMap['РасходВыход'] || '',
+                dataMap['ТемпРецирк'] || '',
+                dataMap['ДавРецирк'] || '',
+                dataMap['ОбъемВыход'] || '',
+                dataMap['РасходВоды'] || '',
+                dataMap['Плотность'] || ''
+            ];
+        }
+
+        // Логируем строку перед записью
+        console.log('Writing to CSV:', row);
+
+        // Записываем строку в файл
+        fs.appendFileSync(csvFilePath, row.join(',') + '\n');
+        console.log('Data successfully written to CSV file.');
+    } catch (error) {
+        console.error('Error writing to CSV file:', error);
+    }
+}
+
+
+/*------------------------------------------------------------------------------------*/
+
+// Now define the updateChartWithModbusData function
+async function updateChartWithModbusData(chart, client) {
+    const dataMap = {
+        'ДавЛевНас': await readModbusData(client, 500),
+        'ДавПравНас': await readModbusData(client, 502),
+        'ДавВыход': await readModbusData(client, 504),
+        'РасходЛевНас': await readModbusData(client, 506),
+        'РасходПравНас': await readModbusData(client, 508),
+        'РасходВыход': await readModbusData(client, 510),
+        'ТемпРецирк': await readModbusData(client, 512),
+        'ДавРецирк': await readModbusData(client, 514),
+        'ОбъемВыход': await readModbusData(client, 516),
+        'РасходВоды': await readModbusData(client, 518),
+        'Плотность': await readModbusData(client, 520),
+    };
+
+    // Логируем dataMap
+    console.log('dataMap:', dataMap);
+
+     // Check if dataMap is valid
+    if (!dataMap || Object.values(dataMap).some(value => value === null || value === undefined)) {
+        console.error('dataMap is undefined or contains null/undefined values, не могу записать данные в CSV');
+        return; // Exit if dataMap is not valid
+    }
+    // Получаем значения для client, bush, well и work
+    const clientValue = document.getElementById('client').value;
+    const bushValue = document.getElementById('bush').value;
+    const wellValue = document.getElementById('well').value;
+    const workValue = document.getElementById('name_work').value;
+
+    // Проверяем, что все значения для записи в CSV определены
+    if (!clientValue || !bushValue || !wellValue || !workValue) {
+        console.error('One or more input values are undefined or empty:', {
+            client: clientValue,
+            bush: bushValue,
+            well: wellValue,
+            work: workValue
+        });
+        return; // Прерываем выполнение, если одно из значений не определено
+    }
+
+    // Записываем данные в CSV
+    await writeDataToCSV(clientValue, bushValue, wellValue, workValue, dataMap);
+
+    // Обновляем график
+    for (const chartName in dataMap) {
+        if (shouldDrawChart(chartName)) {
+            let dataset = chart.data.datasets.find(ds => ds.label === chartName);
+            if (dataset) {
+                dataset.data.push(dataMap[chartName]);
+            } else {
+                chart.data.datasets.push({
+                    label: chartName,
+                    data: [dataMap[chartName]],
+                    backgroundColor: chartConfig[chartName].color,
+                    borderColor: chartConfig[chartName].color,
+                    fill: false,
+                    yAxisID: chartName
+                });
+            }
+        }
+    }
+
+    updateChartAxes(chart);
+    chart.update();
+}
+
+/*---------------------------------------------------------------------------------*/
 
 // Обработчик события "Стоп"
 document.getElementById('stopButton').addEventListener('click', async () => {
@@ -385,7 +536,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         // Останавливаем обновление графика
         isChartRunning = false;
 
-        // Clear the interval to stop chart updates
+        // Очищаем интервал для остановки обновлений графика
         clearInterval(updateInterval);
 
         // Восстанавливаем активность input и кнопки "Применить"
@@ -393,21 +544,27 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         inputs.forEach(input => input.disabled = false);
         document.getElementById('apply').disabled = false;
 
-        // Записываем данные в заранее указанный CSV-файл
-        const dataToWrite = onlineChart.data.labels.map((label, index) => {
-            const row = [label];
-            onlineChart.data.datasets.forEach(dataset => {
-                row.push(dataset.data[index] !== undefined ? dataset.data[index] : '');
-            });
-            return row.join(',');
-        }).join('\n');
+        // Создаем объект dataMap
+        const dataMap = {};
 
-        if (dataToWrite.trim() === '') {
+        // Заполняем dataMap данными из графика
+        onlineChart.data.datasets.forEach(dataset => {
+            dataMap[dataset.label] = dataset.data; // Используем label как ключ и массив данных как значение
+        });
+
+        // Проверяем, что dataMap содержит данные
+        if (Object.keys(dataMap).length === 0 || Object.values(dataMap).every(values => values.length === 0)) {
             console.log('Нет данных для записи в файл.');
             return;
         }
 
-        await writeDataToCSV(dataToWrite);
+        // Записываем данные в CSV
+        const clientValue = document.getElementById('client').value;
+        const bushValue = document.getElementById('bush').value;
+        const wellValue = document.getElementById('well').value;
+        const workValue = document.getElementById('name_work').value;
+
+        await writeDataToCSV(clientValue, bushValue, wellValue, workValue, dataMap);
 
         // Отображаем сообщение о сохранении данных на экране
         const messageElement = document.getElementById('message');
