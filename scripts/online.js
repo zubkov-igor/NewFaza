@@ -275,7 +275,7 @@ function convertInputsToCSV() {
 
     // Создаем массив строк CSV
     const csvData = [
-        ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'],
+        ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'],
         [client, bush, well, nameWork, new Date().toLocaleDateString(), new Date().toLocaleTimeString()]
     ];
     
@@ -350,7 +350,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         }
 
         // Записываем данные в CSV
-        await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap); // Исправлено: добавлен параметр date
+        await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap); 
 
         // Отображаем сообщение о сохранении данных на экране
         const messageElement = document.getElementById('message');
@@ -361,8 +361,9 @@ document.getElementById('stopButton').addEventListener('click', async () => {
 });
 
 // Функция записи данных в CSV
+let headersWritten = false; // Флаг для отслеживания, были ли записаны заголовки
+
 async function writeDataToCSV(client, bush, well, work, date, dataMap) {
-    // Проверка на undefined
     if (!dataMap) {
         console.error('Ошибка: dataMap является undefined');
         return; // Прерываем выполнение функции
@@ -370,32 +371,39 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
 
     try {
         const fileExists = fs.existsSync(csvFilePath);
-        const currentTime = new Date();
-        const formattedTime = currentTime.toLocaleTimeString();
 
-        // Записываем заголовки только для активных графиков
-        if (!fileExists) {
+        // Записываем заголовки только один раз
+        if (!headersWritten) {
             const headers = [
-                'Client', 'Bush', 'Well', 'Work', 'Date', 'Time', 'ДавЛевНас'
+                'Client', 'Bush', 'Well', 'Work', 'Data', 'Time', 'ДавЛевНас'
             ];
             fs.writeFileSync(csvFilePath, headers.join(',') + '\n');
+            headersWritten = true; // Устанавливаем флаг, что заголовки записаны
         }
+
+        // Устанавливаем начальное время
+        let currentTime = new Date();
 
         // Записываем данные
         for (const chartName in dataMap) {
             const values = dataMap[chartName] || [];
-            for (const value of values) {
+            for (let i = 0; i < values.length; i++) {
+                const value = values[i];
+                
                 // Формируем строку для записи
                 const row = [
-                    '', // Пустое значение для Client
-                    '', // Пустое значение для Bush
-                    '', // Пустое значение для Well
-                    '', // Пустое значение для Work
-                    '', // Пустое значение для Date
-                    formattedTime, // Время
-                    value // Значение графика
+                    i === 0 ? client : '', // Записываем значение Client только для первой строки
+                    i === 0 ? bush : '',   // Записываем значение Bush только для первой строки
+                    i === 0 ? well : '',   // Записываем значение Well только для первой строки
+                    i === 0 ? work : '',   // Записываем значение Work только для первой строки
+                    i === 0 ? date : '',   // Записываем значение Date только для первой строки
+                    currentTime.toLocaleTimeString(), // Время для каждой строки
+                    value                  // Значение графика
                 ];
                 fs.appendFileSync(csvFilePath, row.join(',') + '\n');
+
+                // Увеличиваем время на одну секунду
+                currentTime.setSeconds(currentTime.getSeconds() + 1);
             }
         }
 
@@ -405,8 +413,6 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         console.error('Проверка dataMap:', dataMap);
     }
 }
-
-
 
 // Обработчик события для отображения сообщений
 ipcRenderer.on('display-message', (event, message, filePath) => {
