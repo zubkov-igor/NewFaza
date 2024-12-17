@@ -66,7 +66,7 @@ document.getElementById('updateValues').addEventListener('click', () => {
     // Проверка на количество выбранных точек
     if (selectedPoints.length !== 2) {
         alert("Выберите 2 точки для обновления значений.");
-        return; 
+        return;
     }
 
     const startIndex = Math.min(selectedPoints[0], selectedPoints[1]);
@@ -139,7 +139,7 @@ function pointSelectionHandler(event) {
 
 // Функция для обновления стилей точек
 function updatePointStyles() {
-  //  console.log('Updating point styles for chart:', currentChartId); 
+    //  console.log('Updating point styles for chart:', currentChartId); 
     archiveChart.data.datasets.forEach((dataset) => {
         if (dataset.label === currentChartId) {
             dataset.pointBackgroundColor = dataset.data.map((_, index) => {
@@ -199,7 +199,8 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         document.getElementById('well').value = data.Well || '';
         document.getElementById('work').value = data.Work || '';
 
-        loadedData = data.Data || '';
+        // Сохраняем дату из загруженных данных
+        loadedData = data.Date || ''; // Убедитесь, что вы получаете дату из правильного поля
 
         // Обновляем clientInfo
         clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}. Дата: ${loadedData}.`;
@@ -278,14 +279,11 @@ ipcRenderer.on('save-data-response', (event, {
         alert('Данные успешно сохранены!');
         savedSuccessfully = true;
 
-        // Получаем значения из формы
-        const client = document.getElementById('client').value;
-        const bush = document.getElementById('bush').value;
-        const well = document.getElementById('well').value;
-        const work = document.getElementById('work').value;
+        // Обновляем clientInfo с использованием загруженной даты
+        clientInfo = `Заказчик: ${document.getElementById('client').value}. Куст: ${document.getElementById('bush').value}. Скважина: ${document.getElementById('well').value}. Работа: ${document.getElementById('work').value}. Дата: ${loadedData}.`;
 
-        // Обновляем clientInfo
-        clientInfo = `Заказчик: ${client}. Куст: ${bush}. Скважина: ${well}. Работа: ${work}. Дата: ${loadedData}.`;
+        // Проверяем значение clientInfo
+        console.log('Обновленный clientInfo:', clientInfo);
 
         if (archiveChart) {
             archiveChart.update();
@@ -313,8 +311,8 @@ let isRadiusVisible = false;
 // Обработчик события для чекбокса
 toggleRadiusCheckbox.addEventListener('change', function() {
     if (toggleRadiusCheckbox.checked) {
-        passwordModal.style.display = "flex"; 
-        hiddenDiv.style.display = "none"; 
+        passwordModal.style.display = "flex";
+        hiddenDiv.style.display = "none";
     } else {
         hiddenDiv.style.display = "none"; // Скрываем div, если чекбокс не активен
         isRadiusVisible = false; // Сбрасываем состояние видимости радиуса
@@ -390,19 +388,19 @@ function handleSelectedFile(event, path) {
 
     const saveButton = document.getElementById('save');
 
-     const toggleRadius = document.getElementById('toggleRadius');
+    const toggleRadius = document.getElementById('toggleRadius');
 
-        if (archiveChart === null) {
-        saveButton.disabled = true; 
+    if (archiveChart === null) {
+        saveButton.disabled = true;
     } else {
         saveButton.disabled = false;
     }
 
     if (archiveChart === null) {
-        saveButton.disabled = true; 
-        toggleRadius.disabled = true; 
+        saveButton.disabled = true;
+        toggleRadius.disabled = true;
     } else {
-        saveButton.disabled = false; 
+        saveButton.disabled = false;
         toggleRadius.disabled = false;
     }
 

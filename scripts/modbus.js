@@ -4,27 +4,29 @@ const client = new ModbusRTU();
 const statusButton = document.getElementById('statusButton');
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Функция для обновления цвета кнопки
 function updateButtonColor(isConnected) {
-   if (isConnected) {
-    statusButton.style.background = 'radial-gradient(farthest-side at top left, #47CF73, #aceac0)';
-    statusButton.disabled = false;
-    //statusButton.textContent = 'ON';
-  } else {
-    statusButton.style.background = 'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
-    statusButton.disabled = true;
-    //statusButton.textContent = 'Off';
-  }
+    if (isConnected) {
+        statusButton.style.background = 'radial-gradient(farthest-side at top left, #47CF73, #aceac0)';
+        statusButton.disabled = false;
+        //statusButton.textContent = 'ON';
+    } else {
+        statusButton.style.background = 'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
+        statusButton.disabled = true;
+        //statusButton.textContent = 'Off';
+    }
 }
 
 // Попытка подключения к устройству Modbus TCP
 async function connectModbus() {
     try {
         //await client.connectTCP("186.168.65.6", { port: 502 });
-        await client.connectTCP("localhost", { port: 502 });
+        await client.connectTCP("localhost", {
+            port: 502
+        });
         client.setID(1);
         updateButtonColor(true);
     } catch (error) {

@@ -12,7 +12,11 @@ function generateCSV() {
     let currentTime = startTime;
 
     while (currentTime <= endTime) {
-        timeArray.push(currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        timeArray.push(currentTime.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }));
         currentTime = new Date(currentTime.getTime() + 1000); // Увеличиваем на 1 секунду
     }
 

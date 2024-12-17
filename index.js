@@ -1,8 +1,17 @@
-const { app, BrowserWindow, ipcMain, dialog, session, screen} = require('electron');
+const {
+    app,
+    BrowserWindow,
+    ipcMain,
+    dialog,
+    session,
+    screen
+} = require('electron');
 const ModbusRTU = require('modbus-serial');
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
+const {
+    execFile
+} = require('child_process');
 const fastcsv = require('fast-csv');
 
 let mainWindow;
@@ -35,7 +44,7 @@ if (!gotTheLock) {
         mainWindow.setMenu(null);
         mainWindow.loadFile('index.html');
         mainWindow.webContents.openDevTools();
-		win.maximize();
+        win.maximize();
     }
 
     app.whenReady().then(createWindow);
@@ -75,16 +84,24 @@ if (!gotTheLock) {
         const result = await dialog.showSaveDialog({
             title: 'Сохранить CSV файл',
             defaultPath: 'chart-data.csv',
-            filters: [
-                { name: 'CSV Files', extensions: ['csv'] },
-                { name: 'All Files', extensions: ['*'] }
+            filters: [{
+                    name: 'CSV Files',
+                    extensions: ['csv']
+                },
+                {
+                    name: 'All Files',
+                    extensions: ['*']
+                }
             ]
         });
         return result.filePath; // Возвращаем путь к файлу
     });
 
     // Обработчик для сохранения CSV
-    ipcMain.on('save-csv', (event, { filePath, csvData }) => {
+    ipcMain.on('save-csv', (event, {
+        filePath,
+        csvData
+    }) => {
         if (!filePath) {
             event.sender.send('display-message', 'Имя файла не может быть пустым', null);
             return;
@@ -179,86 +196,107 @@ if (!gotTheLock) {
         });
     });
 
-/*-----------------------------------------------------------------------------*/    
-ipcMain.on('save-data', (event, { filePath, newData }) => {
-    console.log('Событие save-data вызвано.'); // Отладочный вывод
+    /*-----------------------------------------------------------------------------*/
+    ipcMain.on('save-data', (event, {
+        filePath,
+        newData
+    }) => {
+        console.log('Событие save-data вызвано.'); // Отладочный вывод
 
-    // Проверка на наличие данных
-    if (!newData || !newData.client) {
-        console.error('Данные не были переданы или имеют неверный формат:', newData);
-        event.reply('save-data-response', { success: false, error: 'Данные не были переданы или имеют неверный формат.' });
-        return;
-    }
-
-    const rows = []; // Массив для хранения обновленных строк
-    let rowIndex = 0; // Индекс текущей строки
-
-    // Чтение CSV файла
-    fs.createReadStream(filePath)
-        .pipe(fastcsv.parse({ headers: true }))
-        .on('data', (row) => {
-            // Обновляем первую строку после заголовков
-            if (rowIndex === 0) { // Первая строка после заголовков (индекс 0)
-                row.Client = newData.client; // Обновляем Client
-                row.Bush = newData.bush || ''; // Обновляем Bush или оставляем пустым
-                row.Well = newData.well || ''; // Обновляем Well или оставляем пустым
-                row.Work = newData.work || ''; // Обновляем Work или оставляем пустым
-                // Не трогаем поле Data, чтобы сохранить его значение
-            }
-
-            // Сохраняем обновленную строку
-            rows.push(row);
-            rowIndex++; // Увеличиваем индекс строки
-        })
-        .on('end', () => {
-            console.log('Обновленные строки:', rows); // Отладочный вывод
-
-            // Записываем обновленные данные обратно в CSV
-            const csvStream = fastcsv.format({ headers: true });
-            const writableStream = fs.createWriteStream(filePath);
-
-            writableStream.on('finish', () => {
-                console.log('CSV файл успешно обновлен.');
-                // Отправляем успешный ответ с обновленной информацией
-                event.reply('save-data-response', { success: true, clientInfo: newData });
+        // Проверка на наличие данных
+        if (!newData || !newData.client) {
+            console.error('Данные не были переданы или имеют неверный формат:', newData);
+            event.reply('save-data-response', {
+                success: false,
+                error: 'Данные не были переданы или имеют неверный формат.'
             });
+            return;
+        }
 
-            writableStream.on('error', (error) => {
-                console.error('Ошибка при записи в CSV файл:', error);
-                event.reply('save-data-response', { success: false, error: error.message });
+        const rows = []; // Массив для хранения обновленных строк
+        let rowIndex = 0; // Индекс текущей строки
+
+        // Чтение CSV файла
+        fs.createReadStream(filePath)
+            .pipe(fastcsv.parse({
+                headers: true
+            }))
+            .on('data', (row) => {
+                // Обновляем первую строку после заголовков
+                if (rowIndex === 0) { // Первая строка после заголовков (индекс 0)
+                    row.Client = newData.client; // Обновляем Client
+                    row.Bush = newData.bush || ''; // Обновляем Bush или оставляем пустым
+                    row.Well = newData.well || ''; // Обновляем Well или оставляем пустым
+                    row.Work = newData.work || ''; // Обновляем Work или оставляем пустым
+                    // Не трогаем поле Data, чтобы сохранить его значение
+                }
+
+                // Сохраняем обновленную строку
+                rows.push(row);
+                rowIndex++; // Увеличиваем индекс строки
+            })
+            .on('end', () => {
+                console.log('Обновленные строки:', rows); // Отладочный вывод
+
+                // Записываем обновленные данные обратно в CSV
+                const csvStream = fastcsv.format({
+                    headers: true
+                });
+                const writableStream = fs.createWriteStream(filePath);
+
+                writableStream.on('finish', () => {
+                    console.log('CSV файл успешно обновлен.');
+                    // Отправляем успешный ответ с обновленной информацией
+                    event.reply('save-data-response', {
+                        success: true,
+                        clientInfo: newData
+                    });
+                });
+
+                writableStream.on('error', (error) => {
+                    console.error('Ошибка при записи в CSV файл:', error);
+                    event.reply('save-data-response', {
+                        success: false,
+                        error: error.message
+                    });
+                });
+
+                // Пайпим данные в поток записи
+                csvStream.pipe(writableStream);
+                rows.forEach((row) => {
+                    console.log('Записываем строку:', row); // Отладочный вывод
+                    csvStream.write(row); // Записываем строку
+                });
+                csvStream.end(); // Убедитесь, что вы вызываете end() для завершения записи
+            })
+            .on('error', (error) => {
+                console.error('Ошибка при чтении CSV файла:', error);
+                event.reply('save-data-response', {
+                    success: false,
+                    error: error.message
+                });
             });
+    });
+    /*------------------------------------------------------------------------*/
 
-            // Пайпим данные в поток записи
-            csvStream.pipe(writableStream);
-            rows.forEach((row) => {
-                console.log('Записываем строку:', row); // Отладочный вывод
-                csvStream.write(row); // Записываем строку
+    ipcMain.on('load-data', (event, filePath) => {
+        const rows = [];
+
+        fs.createReadStream(filePath)
+            .pipe(fastcsv.parse({
+                headers: true
+            }))
+            .on('data', (row) => {
+                rows.push(row);
+            })
+            .on('end', () => {
+                // Отправляем данные обратно в рендерер
+                event.sender.send('data-loaded', rows);
+            })
+            .on('error', (error) => {
+                console.error('Ошибка при чтении CSV файла:', error);
             });
-            csvStream.end(); // Убедитесь, что вы вызываете end() для завершения записи
-        })
-        .on('error', (error) => {
-            console.error('Ошибка при чтении CSV файла:', error);
-            event.reply('save-data-response', { success: false, error: error.message });
-        });
-});
-/*------------------------------------------------------------------------*/
-
-ipcMain.on('load-data', (event, filePath) => {
-    const rows = [];
-
-    fs.createReadStream(filePath)
-        .pipe(fastcsv.parse({ headers: true }))
-        .on('data', (row) => {
-            rows.push(row);
-        })
-        .on('end', () => {
-            // Отправляем данные обратно в рендерер
-            event.sender.send('data-loaded', rows);
-        })
-        .on('error', (error) => {
-            console.error('Ошибка при чтении CSV файла:', error);
-        });
-});
+    });
 
 
 }

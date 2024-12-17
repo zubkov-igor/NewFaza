@@ -1,50 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'" />
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
-	<link rel="stylesheet" href="styles/index.css">
-	<title>New Faza - настройка графиков</title>
+    <link rel="stylesheet" href="styles/index.css">
+    <title>New Faza - настройка графиков</title>
 </head>
+
 <body>
-	<div class="wrapper">
-	<header class="header">
-	</header>
-	<main class="main">
-		<h1>New Faza</h1>
-	<div class="main__content">
-		<div class="block">
-			<div class="block__menu">
-			<a href="index.html"><button class="profile__back back-button" type="button">
-				<svg class="back-button__icon" viewBox="0 0 320 512" height="18" width="18">
-					<path fill="currentColor" d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
-				</svg>
-			</button></a>
-			</div>
-			
-<table id="dataTable" class="blueTable">
-	<caption>Настройка графиков</caption>
-    <thead>
-      <tr>
-      	<th>Актив</th>
-        <th>Цвет</th>
-        <th>Тренды</th>
-        <th>Максимум</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <div class="main__content-center">
-  <div id="message"></div>
-  <button class="block-item_button" id="saveButton">Сохранить</button>
-  </div>
-	</main>
-	<footer class="footer">
-	</footer>
-	</div>
-   <script src="scripts/settings.js"></script>
+    <div class="wrapper">
+        <header class="header">
+        </header>
+        <main class="main">
+            <h1>New Faza</h1>
+            <div class="main__content">
+                <div class="block">
+                    <div class="block__menu">
+                        <a href="index.html"><button class="profile__back back-button" type="button">
+                                <svg class="back-button__icon" viewBox="0 0 320 512" height="18" width="18">
+                                    <path fill="currentColor" d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+                                </svg>
+                            </button></a>
+                    </div>
+
+                    <table id="dataTable" class="blueTable">
+                        <caption>Настройка графиков</caption>
+                        <thead>
+                            <tr>
+                                <th>Актив</th>
+                                <th>Цвет</th>
+                                <th>Тренды</th>
+                                <th>Максимум</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div class="main__content-center">
+                        <div id="message"></div>
+                        <button class="block-item_button" id="saveButton">Сохранить</button>
+                    </div>
+        </main>
+        <footer class="footer">
+        </footer>
+    </div>
+    <script src="scripts/settings.js"></script>
 </body>
+
 </html>

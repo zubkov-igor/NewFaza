@@ -1,4 +1,6 @@
-const { ipcRenderer } = require('electron');
+const {
+    ipcRenderer
+} = require('electron');
 const chartjs = require('chart.js');
 const fs = require('fs');
 const path = require('path');
@@ -38,16 +40,18 @@ try {
 
 // Функция для обновления цвета кнопки
 function updateButtonColor(isConnected) {
-    statusButton.style.background = isConnected 
-        ? 'radial-gradient(farthest-side at top left, #47CF73, #aceac0)' 
-        : 'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
+    statusButton.style.background = isConnected ?
+        'radial-gradient(farthest-side at top left, #47CF73, #aceac0)' :
+        'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
     statusButton.disabled = !isConnected;
 }
 
 // Подключение к устройству Modbus TCP
 async function connectModbus() {
     try {
-        await client.connectTCP("localhost", { port: 502 });
+        await client.connectTCP("localhost", {
+            port: 502
+        });
         client.setID(1);
         updateButtonColor(true);
     } catch (error) {
@@ -188,9 +192,9 @@ function startChart() {
                 }
             }
             const messageElement = document.getElementById('message');
-            messageElement.textContent = shouldUpdateChart 
-                ? '' 
-                : 'Выберите хотя бы один график в настройках.';
+            messageElement.textContent = shouldUpdateChart ?
+                '' :
+                'Выберите хотя бы один график в настройках.';
             onlineChart.update();
         }, 1000);
     }
@@ -199,7 +203,7 @@ function startChart() {
 // Обработчик события DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('online').getContext('2d');
-    onlineChart = new Chart(ctx, { 
+    onlineChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: time,
@@ -278,14 +282,14 @@ function convertInputsToCSV() {
         ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'],
         [client, bush, well, nameWork, new Date().toLocaleDateString(), new Date().toLocaleTimeString()]
     ];
-    
+
     return csvData.map(row => row.join(',')).join('\n');
 }
 
 // Функция для создания CSV файла и записи данных о клиенте
 async function createCSVFile() {
     const csvData = convertInputsToCSV();
-    
+
     if (!csvData) {
         const messageElement = document.getElementById('message');
         messageElement.textContent = 'Пожалуйста, заполните все поля перед созданием файла.';
@@ -298,7 +302,9 @@ async function createCSVFile() {
         const userSelectedPath = await ipcRenderer.invoke('show-save-dialog');
         if (userSelectedPath) {
             csvFilePath = userSelectedPath; // Инициализация переменной
-            fs.writeFileSync(csvFilePath, csvData + '\n', { flag: 'w' }); // Создаем файл и записываем данные о клиенте
+            fs.writeFileSync(csvFilePath, csvData + '\n', {
+                flag: 'w'
+            }); // Создаем файл и записываем данные о клиенте
             const messageElement = document.getElementById('message');
             messageElement.textContent = `Файл успешно создан: ${csvFilePath}`;
             messageElement.style.color = 'green';
@@ -350,7 +356,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         }
 
         // Записываем данные в CSV
-        await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap); 
+        await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap);
 
         // Отображаем сообщение о сохранении данных на экране
         const messageElement = document.getElementById('message');
@@ -375,7 +381,7 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         // Получаем динамические заголовки из dataMap
         const headers = ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'];
         const chartNames = Object.keys(dataMap);
-        
+
         // Добавляем названия графиков в заголовки
         headers.push(...chartNames);
 
@@ -394,10 +400,10 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         for (let i = 0; i < maxLength; i++) {
             const row = [
                 i === 0 ? client : '', // Записываем значение Client только для первой строки
-                i === 0 ? bush : '',   // Записываем значение Bush только для первой строки
-                i === 0 ? well : '',   // Записываем значение Well только для первой строки
-                i === 0 ? work : '',   // Записываем значение Work только для первой строки
-                i === 0 ? date : '',   // Записываем значение Date только для первой строки
+                i === 0 ? bush : '', // Записываем значение Bush только для первой строки
+                i === 0 ? well : '', // Записываем значение Well только для первой строки
+                i === 0 ? work : '', // Записываем значение Work только для первой строки
+                i === 0 ? date : '', // Записываем значение Date только для первой строки
                 currentTime.toLocaleTimeString() // Время для каждой строки
             ];
 
@@ -426,5 +432,5 @@ ipcRenderer.on('display-message', (event, message, filePath) => {
     messageElement.textContent = `${message} ${filePath ? `(${filePath})` : ''}`;
     messageElement.style.color = 'green';
     messageElement.style.display = 'inline';
-    messageElement.classList.remove('hide'); 
+    messageElement.classList.remove('hide');
 });
