@@ -97,7 +97,7 @@ async function updateChartWithModbusData(chart, client) {
         'РасходПравНас': await readModbusData(client, 508),
         'РасходВыход': await readModbusData(client, 510),
         'ТемпРецирк': await readModbusData(client, 512),
-        'ДавРецирк': await readModbusData(client, 514),
+        'ПлотРецирк': await readModbusData(client, 514),
         'ОбъемВыход': await readModbusData(client, 516),
         'РасходВоды': await readModbusData(client, 518),
         'Плотность': await readModbusData(client, 520),

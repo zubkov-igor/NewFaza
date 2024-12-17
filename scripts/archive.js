@@ -211,8 +211,9 @@ ipcRenderer.on('data-loaded', (event, rows) => {
     }
 });
 
+
 let clientInfo = "";
-let headers = ["Client", "Bush", "Well", "Work", "Data"];
+let headers = ["Client", "Bush", "Well", "Work", "Date"];
 let clientDataExtracted = false;
 
 const clientInfoPlugin = {
@@ -225,7 +226,11 @@ const clientInfoPlugin = {
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         const x = chart.width - 10;
-        let y = 10;
+
+        // Получаем высоту легенды
+        const legendHeight = chart.legend.height || 0; // Используем значение по умолчанию, если высота не определена
+        let y = legendHeight - 32;
+
         if (clientInfo) {
             const clientInfoArray = clientInfo.split('. ');
             const clientInfoWithValues = clientInfoArray.join(', ');
@@ -236,6 +241,7 @@ const clientInfoPlugin = {
         ctx.restore();
     }
 };
+
 
 document.getElementById('editForm').addEventListener('submit', (event) => {
     event.preventDefault();
@@ -436,13 +442,13 @@ function handleSelectedFile(event, path) {
                             Q_right: parseFloat(row.РасходПравНас) || null,
                             Q_pipe: parseFloat(row.РасходВыход) || null,
                             T_rec: parseFloat(row.ТемпРецирк) || null,
-                            P_rec: parseFloat(row.ДавРецирк) || null,
+                            P_rec: parseFloat(row.ПлотРецирк) || null,
                             V_pipe: parseFloat(row.ОбъемВыход) || null,
                             Qw: parseFloat(row.РасходВоды) || null,
                             Plm: parseFloat(row.Плотность) || null
                         });
 
-                        const headersToSkip = ['Client', 'Bush', 'Well', 'Work', 'Data', 'Time'];
+                        const headersToSkip = ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'];
                         Object.keys(row).forEach(key => {
                             if (!headersToSkip.includes(key) && row[key] !== undefined && row[key] !== null) {
                                 chartLabels.add(key);
@@ -485,13 +491,13 @@ function handleSelectedFile(event, path) {
                     addDataset('ДавЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
                     addDataset('ДавПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
                     addDataset('ДавВыход', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
-                    addDataset('РасЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
-                    addDataset('РасПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
-                    addDataset('РасВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
-                    addDataset('ТемпРец', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
-                    addDataset('ПлотРец', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
-                    addDataset('ОбъемВых', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
-                    addDataset('РасВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
+                    addDataset('РасходЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
+                    addDataset('РасходПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
+                    addDataset('РасходВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
+                    addDataset('ТемпРецирк', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
+                    addDataset('ПлотРецирк', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
+                    addDataset('ОбъемВыход', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
+                    addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
                     addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
                     // Заполнение <select> названиями графиков
@@ -599,7 +605,8 @@ function handleSelectedFile(event, path) {
                                 clientInfoPlugin: {},
                                 legend: {
                                     display: true,
-                                    align: 'start'
+                                    align: 'start',
+                                    position: 'top'
                                 },
                                 tooltip: {
                                     enabled: true,
@@ -640,7 +647,15 @@ function handleSelectedFile(event, path) {
                                         archiveChart.update();
                                     }
                                 }
-                            }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 10,
+                                    right: 0,
+                                    bottom: 0,
+                                    left: 0
+                                }
+                            },
                         },
                         plugins: [
                             annotationPlugin,
