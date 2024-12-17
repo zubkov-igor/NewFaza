@@ -424,7 +424,7 @@ function handleSelectedFile(event, path) {
                 }))
                 .on('data', (row) => {
                     if (!clientDataExtracted) {
-                        clientInfo = `Заказчик: ${row['Client']}. Куст: ${row['Bush']}. Скважина: ${row['Well']}. Работа: ${row['Work']}. Дата: ${row['Data']}`;
+                        clientInfo = `Заказчик: ${row['Client']}. Куст: ${row['Bush']}. Скважина: ${row['Well']}. Работа: ${row['Work']}. Дата: ${row['Date']}`;
                         clientDataExtracted = true;
                     } else if (row.Time) {
                         formattedData.push({
@@ -432,13 +432,13 @@ function handleSelectedFile(event, path) {
                             P_left: parseFloat(row.ДавЛевНас) || null,
                             P_right: parseFloat(row.ДавПравНас) || null,
                             P_pipe: parseFloat(row.ДавВыход) || null,
-                            Q_left: parseFloat(row.РасЛевНас) || null,
-                            Q_right: parseFloat(row.РасПравНас) || null,
-                            Q_pipe: parseFloat(row.РасВыход) || null,
-                            T_rec: parseFloat(row.ТемпРец) || null,
-                            P_rec: parseFloat(row.ПлотРец) || null,
-                            V_pipe: parseFloat(row.ОбъемВых) || null,
-                            Qw: parseFloat(row.РасВоды) || null,
+                            Q_left: parseFloat(row.РасходЛевНас) || null,
+                            Q_right: parseFloat(row.РасходПравНас) || null,
+                            Q_pipe: parseFloat(row.РасходВыход) || null,
+                            T_rec: parseFloat(row.ТемпРецирк) || null,
+                            P_rec: parseFloat(row.ДавРецирк) || null,
+                            V_pipe: parseFloat(row.ОбъемВыход) || null,
+                            Qw: parseFloat(row.РасходВоды) || null,
                             Plm: parseFloat(row.Плотность) || null
                         });
 
