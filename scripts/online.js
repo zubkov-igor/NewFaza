@@ -46,36 +46,49 @@ function updateButtonColor(isConnected) {
     statusButton.disabled = !isConnected;
 }
 
-// Подключение к устройству Modbus TCP
+// Функция для ожидания
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Функция для подключения к устройству Modbus
 async function connectModbus() {
     try {
-        await client.connectTCP("localhost", {
-            port: 502
-        });
+        await client.connectTCP("186.168.65.6", { port: 502 });
         client.setID(1);
+        console.log('Подключение к Modbus успешно');
         updateButtonColor(true);
     } catch (error) {
-        console.log('Ошибка подключения:', error);
+        console.error('Ошибка подключения:', error.message);
         updateButtonColor(false);
+        await sleep(1000); // Ждем перед повторной попыткой
+        connectModbus(); // Повторная попытка подключения
     }
 }
 
-// Проверка соединения каждые 5 секунд
-setInterval(async () => {
+// Функция для проверки соединения
+async function checkConnection() {
     try {
         await client.readHoldingRegisters(547, 1);
+        console.log('Соединение активно');
         updateButtonColor(true);
     } catch (error) {
-        console.log('Проблема с соединением:', error);
+        console.error('Проблема с соединением:', error.message);
         updateButtonColor(false);
         await sleep(1000);
-        client.close();
-        connectModbus();
+        await client.close(); // Закрываем клиент
+        connectModbus(); // Повторная попытка подключения
     }
-}, 5000);
+}
 
-// Инициируем подключение
-connectModbus();
+// Инициируем подключение и проверку соединения
+async function startModbus() {
+    await connectModbus(); // Первоначальное подключение
+    setInterval(checkConnection, 5000); // Проверяем соединение каждые 5 секунд
+}
+
+// Запускаем процесс
+startModbus();
 
 async function readModbusData(client, address) {
     try {
