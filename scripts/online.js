@@ -372,11 +372,15 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
     try {
         const fileExists = fs.existsSync(csvFilePath);
 
+        // Получаем динамические заголовки из dataMap
+        const headers = ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'];
+        const chartNames = Object.keys(dataMap);
+        
+        // Добавляем названия графиков в заголовки
+        headers.push(...chartNames);
+
         // Записываем заголовки только один раз
         if (!headersWritten) {
-            const headers = [
-                'Client', 'Bush', 'Well', 'Work', 'Data', 'Time', 'ДавЛевНас'
-            ];
             fs.writeFileSync(csvFilePath, headers.join(',') + '\n');
             headersWritten = true; // Устанавливаем флаг, что заголовки записаны
         }
@@ -385,26 +389,28 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         let currentTime = new Date();
 
         // Записываем данные
-        for (const chartName in dataMap) {
-            const values = dataMap[chartName] || [];
-            for (let i = 0; i < values.length; i++) {
-                const value = values[i];
-                
-                // Формируем строку для записи
-                const row = [
-                    i === 0 ? client : '', // Записываем значение Client только для первой строки
-                    i === 0 ? bush : '',   // Записываем значение Bush только для первой строки
-                    i === 0 ? well : '',   // Записываем значение Well только для первой строки
-                    i === 0 ? work : '',   // Записываем значение Work только для первой строки
-                    i === 0 ? date : '',   // Записываем значение Date только для первой строки
-                    currentTime.toLocaleTimeString(), // Время для каждой строки
-                    value                  // Значение графика
-                ];
-                fs.appendFileSync(csvFilePath, row.join(',') + '\n');
+        const maxLength = Math.max(...Object.values(dataMap).map(arr => arr.length)); // Максимальная длина массивов
 
-                // Увеличиваем время на одну секунду
-                currentTime.setSeconds(currentTime.getSeconds() + 1);
+        for (let i = 0; i < maxLength; i++) {
+            const row = [
+                i === 0 ? client : '', // Записываем значение Client только для первой строки
+                i === 0 ? bush : '',   // Записываем значение Bush только для первой строки
+                i === 0 ? well : '',   // Записываем значение Well только для первой строки
+                i === 0 ? work : '',   // Записываем значение Work только для первой строки
+                i === 0 ? date : '',   // Записываем значение Date только для первой строки
+                currentTime.toLocaleTimeString() // Время для каждой строки
+            ];
+
+            // Добавляем данные графиков
+            for (const chartName of chartNames) {
+                const value = dataMap[chartName][i] !== undefined ? dataMap[chartName][i] : ''; // Если значение существует, добавляем его
+                row.push(value);
             }
+
+            fs.appendFileSync(csvFilePath, row.join(',') + '\n');
+
+            // Увеличиваем время на одну секунду
+            currentTime.setSeconds(currentTime.getSeconds() + 1);
         }
 
         console.log('Данные успешно записаны в CSV файл.');
