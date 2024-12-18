@@ -24,6 +24,7 @@ let onlineChart;
 let chartConfig = {};
 const configFilePath = path.join(__dirname, 'settings/settings.json');
 const time = [];
+const timestamps = []; // Массив для хранения временных меток
 const datasets = [];
 let isChartRunning = false; // Флаг для отслеживания состояния графика
 const statusButton = document.getElementById('statusButton');
@@ -54,7 +55,8 @@ function sleep(ms) {
 // Функция для подключения к устройству Modbus
 async function connectModbus() {
     try {
-        await client.connectTCP("186.168.65.6", { port: 502 });
+        // await client.connectTCP("186.168.65.5", { port: 502 });
+        await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         console.log('Подключение к Modbus успешно');
         updateButtonColor(true);
@@ -119,6 +121,10 @@ async function updateChartWithModbusData(chart, client) {
         'РасходВоды': await readModbusData(client, 518),
         'Плотность': await readModbusData(client, 520),
     };
+
+    // Добавляем текущую временную метку
+    const currentTime = new Date().toLocaleTimeString();
+    timestamps.push(currentTime); // Сохраняем временную метку
 
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
@@ -404,9 +410,6 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
             headersWritten = true; // Устанавливаем флаг, что заголовки записаны
         }
 
-        // Устанавливаем начальное время
-        let currentTime = new Date();
-
         // Записываем данные
         const maxLength = Math.max(...Object.values(dataMap).map(arr => arr.length)); // Максимальная длина массивов
 
@@ -417,7 +420,7 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
                 i === 0 ? well : '', // Записываем значение Well только для первой строки
                 i === 0 ? work : '', // Записываем значение Work только для первой строки
                 i === 0 ? date : '', // Записываем значение Date только для первой строки
-                currentTime.toLocaleTimeString() // Время для каждой строки
+                timestamps[i] || '' // Используем временную метку
             ];
 
             // Добавляем данные графиков
@@ -427,9 +430,6 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
             }
 
             fs.appendFileSync(csvFilePath, row.join(',') + '\n');
-
-            // Увеличиваем время на одну секунду
-            currentTime.setSeconds(currentTime.getSeconds() + 1);
         }
 
         console.log('Данные успешно записаны в CSV файл.');

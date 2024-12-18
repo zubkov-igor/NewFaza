@@ -16,7 +16,6 @@ const fastcsv = require('fast-csv');
 
 let mainWindow;
 
-// Prevent multiple instances of the app
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
@@ -94,7 +93,7 @@ if (!gotTheLock) {
                 }
             ]
         });
-        return result.filePath; // Возвращаем путь к файлу
+        return result.filePath;
     });
 
     // Обработчик для сохранения CSV
@@ -201,7 +200,7 @@ if (!gotTheLock) {
         filePath,
         newData
     }) => {
-        console.log('Событие save-data вызвано.'); // Отладочный вывод
+        
 
         // Проверка на наличие данных
         if (!newData || !newData.client) {
@@ -213,8 +212,8 @@ if (!gotTheLock) {
             return;
         }
 
-        const rows = []; // Массив для хранения обновленных строк
-        let rowIndex = 0; // Индекс текущей строки
+        const rows = []; 
+        let rowIndex = 0; 
 
         // Чтение CSV файла
         fs.createReadStream(filePath)
@@ -223,30 +222,26 @@ if (!gotTheLock) {
             }))
             .on('data', (row) => {
                 // Обновляем первую строку после заголовков
-                if (rowIndex === 0) { // Первая строка после заголовков (индекс 0)
-                    row.Client = newData.client; // Обновляем Client
-                    row.Bush = newData.bush || ''; // Обновляем Bush или оставляем пустым
-                    row.Well = newData.well || ''; // Обновляем Well или оставляем пустым
-                    row.Work = newData.work || ''; // Обновляем Work или оставляем пустым
-                    // Не трогаем поле Data, чтобы сохранить его значение
+                if (rowIndex === 0) { 
+                    row.Client = newData.client; 
+                    row.Bush = newData.bush || ''; 
+                    row.Well = newData.well || ''; 
+                    row.Work = newData.work || '';
                 }
 
-                // Сохраняем обновленную строку
+                
                 rows.push(row);
-                rowIndex++; // Увеличиваем индекс строки
+                rowIndex++; 
             })
             .on('end', () => {
-                console.log('Обновленные строки:', rows); // Отладочный вывод
-
-                // Записываем обновленные данные обратно в CSV
+                
                 const csvStream = fastcsv.format({
                     headers: true
                 });
                 const writableStream = fs.createWriteStream(filePath);
 
                 writableStream.on('finish', () => {
-                    console.log('CSV файл успешно обновлен.');
-                    // Отправляем успешный ответ с обновленной информацией
+                   
                     event.reply('save-data-response', {
                         success: true,
                         clientInfo: newData
@@ -264,10 +259,10 @@ if (!gotTheLock) {
                 // Пайпим данные в поток записи
                 csvStream.pipe(writableStream);
                 rows.forEach((row) => {
-                    console.log('Записываем строку:', row); // Отладочный вывод
-                    csvStream.write(row); // Записываем строку
+                    
+                    csvStream.write(row);
                 });
-                csvStream.end(); // Убедитесь, что вы вызываете end() для завершения записи
+                csvStream.end(); 
             })
             .on('error', (error) => {
                 console.error('Ошибка при чтении CSV файла:', error);
