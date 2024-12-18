@@ -381,7 +381,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         const messageElement = document.getElementById('message');
         messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
         messageElement.style.color = 'green';
-        messageElement.style.display = 'inline';
+        messageElement.style.display = 'block';
     }
 });
 
