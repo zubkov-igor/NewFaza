@@ -457,17 +457,29 @@ function handleSelectedFile(event, path) {
                 .on('error', error => {
                     console.error('Error parsing CSV:', error);
                 })
-                .on('end', () => {
-                    document.getElementById('spinner').style.display = 'none';
-                    const time = formattedData.map(row => {
-                        const parsedTime = Date.parse(`1970-01-01T${row.Time}`);
-                        return isNaN(parsedTime) ? null : new Date(parsedTime).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                        });
-                    });
+         .on('end', () => {
+    document.getElementById('spinner').style.display = 'none';
+
+    // Определяем шаг
+    const totalPoints = formattedData.length;
+    const maxPoints = 40;
+    const step = Math.floor(totalPoints / maxPoints); // Шаг для выборки данных
+
+    // Выбираем данные с интервалом
+    const limitedData = [];
+    for (let i = 0; i < totalPoints; i += step) {
+        limitedData.push(formattedData[i]);
+    }
+
+    const time = limitedData.map(row => {
+        const parsedTime = Date.parse(`1970-01-01T${row.Time}`);
+        return isNaN(parsedTime) ? null : new Date(parsedTime).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+    });
 
                     const datasets = [];
                     const addDataset = (label, dataKey, color, yAxisID) => {

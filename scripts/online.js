@@ -220,6 +220,8 @@ function startChart() {
     }
 }
 
+
+
 // Обработчик события DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('online').getContext('2d');
@@ -243,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             scales: {
                 x: {
-                    max: 10
+
                 }
             }
         },
