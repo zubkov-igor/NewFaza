@@ -55,7 +55,7 @@ function sleep(ms) {
 // Функция для подключения к устройству Modbus
 async function connectModbus() {
     try {
-        // await client.connectTCP("186.168.65.5", { port: 502 });
+        // await client.connectTCP("192.168.68.5", { port: 502 });
         await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         console.log('Подключение к Modbus успешно');
@@ -122,9 +122,13 @@ async function updateChartWithModbusData(chart, client) {
         'Плотность': await readModbusData(client, 520),
     };
 
-    // Добавляем текущую временную метку
+    // Получаем текущую временную метку
     const currentTime = new Date().toLocaleTimeString();
-    timestamps.push(currentTime); // Сохраняем временную метку
+
+    // Проверяем, есть ли уже такая временная метка
+    if (!timestamps.includes(currentTime)) {
+        timestamps.push(currentTime); // Сохраняем временную метку только если она уникальна
+    }
 
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
@@ -137,7 +141,8 @@ async function updateChartWithModbusData(chart, client) {
                     data: [dataMap[chartName]],
                     backgroundColor: chartConfig[chartName].color,
                     borderColor: chartConfig[chartName].color,
-                    fill: false,
+                    borderWidth: 1,
+                    tension: 0.4,
                     yAxisID: chartName
                 });
             }
@@ -157,7 +162,7 @@ function updateChartAxes(chart) {
             i++;
         }
     }
-    chart.options.animation.duration = 0; // Отключаем анимацию для более быстрой обновляемости
+    chart.options.animation.duration = 0;
     chart.update();
 }
 
@@ -231,6 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutBounce'
+            },
             elements: {
                 point: {
                     radius: 0
