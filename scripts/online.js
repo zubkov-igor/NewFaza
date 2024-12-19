@@ -241,7 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     radius: 0
                 }
             },
-            scales: {}
+            scales: {
+                x: {
+                    max: 10
+                }
+            }
         },
         grid: {
             display: false
