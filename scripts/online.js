@@ -124,11 +124,7 @@ async function updateChartWithModbusData(chart, client) {
 
     // Получаем текущую временную метку
     const currentTime = new Date().toLocaleTimeString();
-
-    // Проверяем, есть ли уже такая временная метка
-    if (!timestamps.includes(currentTime)) {
-        timestamps.push(currentTime); // Сохраняем временную метку только если она уникальна
-    }
+    timestamps.push(currentTime); // Добавляем временную метку без проверки
 
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
@@ -422,14 +418,21 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         // Записываем данные
         const maxLength = Math.max(...Object.values(dataMap).map(arr => arr.length)); // Максимальная длина массивов
 
+        const uniqueRows = new Set(); // Используем Set для хранения уникальных строк
+
+        // Начальная временная метка
+        let currentTime = new Date(); // Получаем текущее время
+        currentTime.setSeconds(currentTime.getSeconds() - maxLength); // Устанавливаем начальное время на maxLength секунд назад
+
         for (let i = 0; i < maxLength; i++) {
+            const rowTime = currentTime.toLocaleTimeString(); // Получаем временную метку для текущей строки
             const row = [
                 i === 0 ? client : '', // Записываем значение Client только для первой строки
                 i === 0 ? bush : '', // Записываем значение Bush только для первой строки
                 i === 0 ? well : '', // Записываем значение Well только для первой строки
                 i === 0 ? work : '', // Записываем значение Work только для первой строки
                 i === 0 ? date : '', // Записываем значение Date только для первой строки
-                timestamps[i] || '' // Используем временную метку
+                rowTime // Используем временную метку для текущей строки
             ];
 
             // Добавляем данные графиков
@@ -438,7 +441,17 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
                 row.push(value);
             }
 
-            fs.appendFileSync(csvFilePath, row.join(',') + '\n');
+            // Преобразуем строку в формат для проверки уникальности
+            const rowString = row.join(',');
+
+            // Проверяем, существует ли такая строка
+            if (!uniqueRows.has(rowString)) {
+                uniqueRows.add(rowString); // Добавляем строку в Set
+                fs.appendFileSync(csvFilePath, row.join(',') + '\n'); // Записываем строку в файл
+            }
+
+            // Увеличиваем временную метку на 1 секунду для следующей строки
+            currentTime.setSeconds(currentTime.getSeconds() + 1);
         }
 
         console.log('Данные успешно записаны в CSV файл.');
