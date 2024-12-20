@@ -16,6 +16,7 @@ const fastcsv = require('fast-csv');
 
 let mainWindow;
 
+
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {

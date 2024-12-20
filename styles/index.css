@@ -181,6 +181,8 @@ body {
     padding: 20px 0;
 }
 
+/*---------------------------------------------------------*/
+
 .block-item_button {
     min-width: 180px;
     margin: 10px 0;
@@ -191,6 +193,13 @@ body {
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.07), 0 4px 8px rgba(0, 0, 0, 0.07), 0 8px 16px rgba(0, 0, 0, 0.07), 0 16px 32px rgba(0, 0, 0, 0.07), 0 32px 64px rgba(0, 0, 0, 0.07), inset 0 1px 0 0px rgba(255, 255, 255, 0.15);
 }
+
+.block-item_button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
 
 .block-item_button:hover {
     background-color: var(--color-sky);
@@ -270,24 +279,22 @@ body {
     line-height: 35px;
     font-size: 14px;
     color: var(--color-light);
-    font-weight: bold;
+    font-weight: 400;
+    letter-spacing: 2px;
     text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
     background: #75a940;
     border-color: #5b8432 #567d2f #425f24;
     border-radius: 5px;
     background-image: linear-gradient(to bottom, #9bc86e 0%, #75a940 50%, #669338 80%, #75a940 100%);
-    0.2;
 }
 
-.start-button:hover,
-.start-button.hover {
-    background-color: #7ab043;
-    border-color: #476627 #476627 #354d1d;
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 1px 5px #75a940;
+.start-button:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
 }
 
-.start-button:active,
-.start-button.active {
+.start-button:active {
     border-color: #354d1d #425f24 #4f722b;
     background: #6b9a3a;
     box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.8);
@@ -306,16 +313,14 @@ body {
     text-shadow: 0 -1px #8696dc, 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
-.start-button:disabled {
-    cursor: not-allowed;
-}
 
 .stop-button {
     padding: 0 15px;
     line-height: 35px;
     font-size: 14px;
     color: var(--color-light);
-    font-weight: bold;
+    font-weight: 400;
+    letter-spacing: 2px;
     text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
     background: #cf3e38;
     border-color: #ab2e29 #a32c27 #82231f;
@@ -323,21 +328,8 @@ body {
     background-image: linear-gradient(to bottom, #de7a76 0%, #cf3e38 50%, #bb332d 80%, #cf3e38 100%);
 }
 
-.stop-button:hover,
-.stop-button.hover {
-    padding: 0 15px;
-    line-height: 35px;
-    font-size: 14px;
-    color: var(--color-light);
-    font-weight: bold;
-    text-shadow: 0 -1px;
-    background-color: #d14640;
-    border-color: #8a2521 #8a2521 #6d1e1a;
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 1px 5px #cf3e38;
-}
-
 .stop-button:active,
-.stop-button.active {
+{
     border-color: #6d1e1a #82231f #962924;
     background: #c3352f;
     box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.8);
@@ -358,6 +350,8 @@ body {
 }
 
 .stop-button:disabled {
+    background: #ccc;
+    color: #666;
     cursor: not-allowed;
 }
 
@@ -552,20 +546,7 @@ label {
     margin-right: 10px;
 }
 
-.block-item_button {
-    padding: 5px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 5px;
-    height: 40px;
-    align-self: center;
-    cursor: pointer;
-}
 
-.block-item_button:disabled {
-    background-color: #ccc;
-    color: #666;
-    cursor: not-allowed;
-}
 
 .vline {
     width: 1px;
