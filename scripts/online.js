@@ -55,7 +55,7 @@ function sleep(ms) {
 // Функция для подключения к устройству Modbus
 async function connectModbus() {
     try {
-        //await client.connectTCP("192.168.65.5", { port: 502 });
+        // await client.connectTCP("192.168.68.5", { port: 502 });
         await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         console.log('Подключение к Modbus успешно');
@@ -220,6 +220,9 @@ function startChart() {
     }
 }
 
+
+
+// Обработчик события DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('online').getContext('2d');
     onlineChart = new Chart(ctx, {
@@ -291,56 +294,6 @@ function checkFields() {
         messageElement.style.display = 'inline'; // Show the message
     }
 }
-
-// Обработчик события "Старт"
-document.getElementById('stopButton').addEventListener('click', async () => {
-    if (isChartRunning) {
-        // Останавливаем обновление графика
-        isChartRunning = false;
-
-        // Очищаем интервал для остановки обновлений графика
-        clearInterval(updateInterval);
-
-        // Получаем значения для client, bush, well и work
-        const clientValue = document.getElementById('client').value;
-        const bushValue = document.getElementById('bush').value;
-        const wellValue = document.getElementById('well').value;
-        const workValue = document.getElementById('name_work').value;
-
-        // Создаем объект dataMap
-        const dataMap = {};
-
-        // Заполняем dataMap данными из графика
-        onlineChart.data.datasets.forEach(dataset => {
-            dataMap[dataset.label] = dataset.data; // Используем label как ключ и массив данных как значение
-        });
-
-        // Проверяем, что dataMap содержит данные
-        if (Object.keys(dataMap).length > 0) {
-            // Записываем данные в CSV
-            await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap);
-        } else {
-            console.log('Нет данных для записи в файл.');
-        }
-
-        // Отображаем сообщение о сохранении данных на экране
-        const messageElement = document.getElementById('message');
-        messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
-        messageElement.style.color = 'green';
-        messageElement.style.display = 'block';
-
-        // Отключаем кнопки "Применить", "Старт" и "Стоп"
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => input.disabled = true);
-        document.getElementById('apply').disabled = true;
-        document.getElementById('startButton').disabled = true;
-        document.getElementById('stopButton').disabled = true;
-
-        // Сбрасываем флаг заголовков
-        headersWritten = false; // Сброс флага, чтобы заголовки могли быть записаны снова
-    }
-});
-
 
 // Функция для преобразования данных в формат CSV
 function convertInputsToCSV() {
@@ -440,18 +393,8 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
         messageElement.style.color = 'green';
         messageElement.style.display = 'block';
-
-        // Сбрасываем флаг заголовков
-        headersWritten = false; // Сброс флага, чтобы заголовки могли быть записаны снова
     }
 });
-
-        // Отображаем сообщение о сохранении данных на экране
-        const messageElement = document.getElementById('message');
-        messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
-        messageElement.style.color = 'green';
-        messageElement.style.display = 'block';
-
 
 // Функция записи данных в CSV
 let headersWritten = false; // Флаг для отслеживания, были ли записаны заголовки
