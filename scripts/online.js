@@ -172,7 +172,7 @@ function createYAxis(chart, chartName, index) {
     const max = chartConfig[chartName].max || 500;
     return {
         type: 'linear',
-        position: 'left',
+        position: 'right',
         beginAtZero: true,
         max: max,
         ticks: {
@@ -183,14 +183,57 @@ function createYAxis(chart, chartName, index) {
             text: chartName,
             color: chartConfig[chartName].color,
         },
-        grid: {
-            display: false
-        },
-        id: chartName
+        id: chartName,
     };
 }
 
-// Обработчик события "Старт"
+// Обработчик события DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('online').getContext('2d');
+    onlineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: time,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutBounce'
+            },
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            scales: {
+                x: {},
+                y: {
+                    position: 'right' // Устанавливаем позицию оси Y вправо
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom', // Устанавливаем позицию легенды
+                    labels: {
+                        font: {
+                            size: 16, // Размер шрифта
+                        },
+                        padding: 30, // Отступ между элементами легенды
+                        boxWidth: 30, // Ширина цветного квадрата
+                    }
+                }
+            },
+            grid: {
+                display: false
+            }
+        }
+    });
+});
+
+    // Обработчик события "Старт"
 function startChart() {
     if (!isChartRunning) {
         isChartRunning = true;
@@ -220,40 +263,6 @@ function startChart() {
     }
 }
 
-
-
-// Обработчик события DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('online').getContext('2d');
-    onlineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: time,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutBounce'
-            },
-            elements: {
-                point: {
-                    radius: 0
-                }
-            },
-            scales: {
-                x: {
-
-                }
-            }
-        },
-        grid: {
-            display: false
-        }
-    });
-
     // Disable the start button and stop button initially
     const startButton = document.getElementById('startButton');
     const stopButton = document.getElementById('stopButton');
@@ -268,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for the start button
     startButton.addEventListener('click', startChart);
-});
+
 
 // Функция для проверки, заполнены ли все необходимые поля
 function checkFields() {
