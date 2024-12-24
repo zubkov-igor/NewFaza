@@ -167,7 +167,48 @@ function shouldDrawChart(chartName) {
     return chartConfig[chartName] && chartConfig[chartName].active === 1;
 }
 
-// Функция для создания осей Y на основе конфигурации
+const chartUnit= {
+    'ДавЛевНас': { color: '#990002', unit: 'атм' },
+    'ДавПравНас': { color: '#ff7f7e', unit: 'атм' },
+    'ДавВыход': { color: '#fe0000', unit: 'атм' },
+    'РасходЛевНас': { color: '#3399fe', unit: 'л/сек' },
+    'РасходПравНас': { color: '#98ccfe', unit: 'л/сек' },
+    'РасходВыход': { color: '#0000FF', unit: 'л/сек' },
+    'ТемпРецирк': { color: '#fed700', unit: 'С' },
+    'ПлотРецирк': { color: '#7fcc7e', unit: 'г/см3' },
+    'ОбъемВыход': { color: '#000000', unit: 'м3' },
+    'РасходВоды': { color: '#ff6600', unit: 'м/сек' },
+    'Плотность': { color: '#009900', unit: 'г/см3' },
+};
+
+const unitPlugin = {
+    id: 'unitPlugin',
+    afterDraw: (chart) => {
+        const ctx = chart.ctx;
+        const chartArea = chart.chartArea;
+
+        for (const scaleId in chart.scales) {
+            const scale = chart.scales[scaleId];
+            if (scale.type === 'linear') {
+                const unit = chartUnit[scale.id]?.unit; // Получаем единицу измерения
+                if (unit) {
+                    const x = scale.left + (scale.width / 2);
+                    const y = chartArea.bottom + 20;
+
+                    ctx.save();
+                    ctx.fillStyle = chartUnit[scale.id].color;
+                    ctx.textAlign = 'center';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(unit, x, y);
+                    ctx.restore();
+                }
+            }
+        }
+    }
+};
+
+Chart.register(unitPlugin);
+
 function createYAxis(chart, chartName, index) {
     const max = chartConfig[chartName].max || 500;
     return {
@@ -176,18 +217,15 @@ function createYAxis(chart, chartName, index) {
         beginAtZero: true,
         max: max,
         ticks: {
-            color: chartConfig[chartName].color,
+            color: chartUnit[chartName].color,
         },
         title: {
-            display: false,
-            text: chartName,
-            color: chartConfig[chartName].color,
+            display: false, // Отключаем стандартный заголовок
         },
         id: chartName,
     };
 }
 
-// Обработчик события DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('online').getContext('2d');
     onlineChart = new Chart(ctx, {
@@ -216,15 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             plugins: {
                 legend: {
-                    position: 'bottom', // Устанавливаем позицию легенды
+                    position: 'bottom',
                     labels: {
                         font: {
-                            size: 16, // Размер шрифта
+                            size: 16,
                         },
-                        padding: 30, // Отступ между элементами легенды
-                        boxWidth: 30, // Ширина цветного квадрата
+                        padding: 30,
+                        boxWidth: 30,
                     }
-                }
+                },
+                unitPlugin // Включаем наш плагин
             },
             grid: {
                 display: false
