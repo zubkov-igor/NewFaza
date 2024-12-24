@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-    // Обработчик события "Старт"
+// Обработчик события "Старт"
 function startChart() {
     if (!isChartRunning) {
         isChartRunning = true;
@@ -297,6 +297,10 @@ function startChart() {
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => input.disabled = true);
         document.getElementById('apply').disabled = true;
+
+        // Делаем кнопку "Старт" неактивной
+        const startButton = document.getElementById('startButton');
+        startButton.disabled = true;
 
         // Start the interval and store its ID
         updateInterval = setInterval(async () => {
@@ -318,21 +322,20 @@ function startChart() {
     }
 }
 
-    // Disable the start button and stop button initially
-    const startButton = document.getElementById('startButton');
-    const stopButton = document.getElementById('stopButton');
-    startButton.disabled = true;
-    stopButton.disabled = true; // Добавлено отключение кнопки "Стоп"
+// Disable the start button and stop button initially
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+startButton.disabled = true;
+stopButton.disabled = true; // Добавлено отключение кнопки "Стоп"
 
-    // Add event listeners to input fields to check if they are filled
-    const inputFields = ['client', 'bush', 'well', 'name_work'];
-    inputFields.forEach(field => {
-        document.getElementById(field).addEventListener('input', checkFields);
-    });
+// Add event listeners to input fields to check if they are filled
+const inputFields = ['client', 'bush', 'well', 'name_work'];
+inputFields.forEach(field => {
+    document.getElementById(field).addEventListener('input', checkFields);
+});
 
-    // Add event listener for the start button
-    startButton.addEventListener('click', startChart);
-
+// Add event listener for the start button
+startButton.addEventListener('click', startChart);
 
 // Функция для проверки, заполнены ли все необходимые поля
 function checkFields() {
@@ -424,10 +427,9 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         // Очищаем интервал для остановки обновлений графика
         clearInterval(updateInterval);
 
-        // Восстанавливаем активность input и кнопки "Применить"
+        // Восстанавливаем активность input
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => input.disabled = false);
-        document.getElementById('apply').disabled = false;
 
         // Получаем значения для client, bush, well и work
         const clientValue = document.getElementById('client').value;
@@ -457,6 +459,14 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         messageElement.textContent = `Данные успешно сохранены в файл: ${csvFilePath}`;
         messageElement.style.color = 'green';
         messageElement.style.display = 'block';
+
+        // Делаем кнопку "Стоп" неактивной
+        const stopButton = document.getElementById('stopButton');
+        stopButton.disabled = true;
+
+        // Делаем кнопку "Применить" неактивной
+        const applyButton = document.getElementById('apply');
+        applyButton.disabled = true; // Оставляем кнопку "Применить" неактивной
     }
 });
 
