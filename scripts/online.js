@@ -107,6 +107,20 @@ async function readModbusData(client, address) {
     }
 }
 
+const chartUnit = {
+    'ДавЛевНас': { color: '#990002', unit: 'атм' },
+    'ДавПравНас': { color: '#ff7f7e', unit: 'атм' },
+    'ДавВыход': { color: '#fe0000', unit: 'атм' },
+    'РасходЛевНас': { color: '#3399fe', unit: 'л/сек' },
+    'РасходПравНас': { color: '#98ccfe', unit: 'л/сек' },
+    'РасходВыход': { color: '#0000FF', unit: 'л/сек' },
+    'ТемпРецирк': { color: '#fed700', unit: 'С' },
+    'ПлотРецирк': { color: '#7fcc7e', unit: 'г/см3' },
+    'ОбъемВыход': { color: '#000000', unit: 'м3' },
+    'РасходВоды': { color: '#ff6600', unit: 'м/сек' },
+    'Плотность': { color: '#009900', unit: 'г/см3' },
+};
+
 async function updateChartWithModbusData(chart, client) {
     const dataMap = {
         'ДавЛевНас': await readModbusData(client, 500),
@@ -126,6 +140,10 @@ async function updateChartWithModbusData(chart, client) {
     const currentTime = new Date().toLocaleTimeString();
     timestamps.push(currentTime); // Добавляем временную метку без проверки
 
+    // Обновление отображаемых данных
+    const dataDisplay = document.getElementById('legend');
+    dataDisplay.innerHTML = ''; // Очищаем предыдущие данные
+
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
             let dataset = chart.data.datasets.find(ds => ds.label === chartName);
@@ -142,6 +160,10 @@ async function updateChartWithModbusData(chart, client) {
                     yAxisID: chartName
                 });
             }
+
+            // Обновляем отображаемые данные под графиком с использованием цвета
+        const color = chartUnit[chartName].color; // Получаем цвет из chartUnit
+        dataDisplay.innerHTML += `<div style="color: ${color};">${chartName}: ${dataMap[chartName]} ${chartUnit[chartName].unit}</div>`;
         }
     }
 
@@ -167,25 +189,32 @@ function shouldDrawChart(chartName) {
     return chartConfig[chartName] && chartConfig[chartName].active === 1;
 }
 
-const chartUnit= {
-    'ДавЛевНас': { color: '#990002', unit: 'атм' },
-    'ДавПравНас': { color: '#ff7f7e', unit: 'атм' },
-    'ДавВыход': { color: '#fe0000', unit: 'атм' },
-    'РасходЛевНас': { color: '#3399fe', unit: 'л/сек' },
-    'РасходПравНас': { color: '#98ccfe', unit: 'л/сек' },
-    'РасходВыход': { color: '#0000FF', unit: 'л/сек' },
-    'ТемпРецирк': { color: '#fed700', unit: 'С' },
-    'ПлотРецирк': { color: '#7fcc7e', unit: 'г/см3' },
-    'ОбъемВыход': { color: '#000000', unit: 'м3' },
-    'РасходВоды': { color: '#ff6600', unit: 'м/сек' },
-    'Плотность': { color: '#009900', unit: 'г/см3' },
-};
+// Функция для создания осей Y на основе конфигурации
+function createYAxis(chart, chartName, index) {
+    const max = chartConfig[chartName].max || 500;
+    return {
+        type: 'linear',
+        position: 'right',
+        beginAtZero: true,
+        max: max,
+        ticks: {
+            color: chartConfig[chartName].color,
+        },
+        title: {
+            display: false,
+            text: chartName,
+            color: chartConfig[chartName].color,
+        },
+        id: chartName,
+    };
+}
 
 const unitPlugin = {
     id: 'unitPlugin',
     afterDraw: (chart) => {
         const ctx = chart.ctx;
         const chartArea = chart.chartArea;
+        const chartUnit = chart.options.chartUnit; // Получаем chartUnit из опций графика
 
         for (const scaleId in chart.scales) {
             const scale = chart.scales[scaleId];
@@ -207,25 +236,10 @@ const unitPlugin = {
     }
 };
 
+// Регистрация плагина
 Chart.register(unitPlugin);
 
-function createYAxis(chart, chartName, index) {
-    const max = chartConfig[chartName].max || 500;
-    return {
-        type: 'linear',
-        position: 'right',
-        beginAtZero: true,
-        max: max,
-        ticks: {
-            color: chartUnit[chartName].color,
-        },
-        title: {
-            display: false, // Отключаем стандартный заголовок
-        },
-        id: chartName,
-    };
-}
-
+// Инициализация графика
 document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('online').getContext('2d');
     onlineChart = new Chart(ctx, {
@@ -235,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             datasets: datasets
         },
         options: {
+            chartUnit: chartUnit, // Передаем chartUnit в опции графика
             responsive: true,
             maintainAspectRatio: false,
             animation: {
@@ -254,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             plugins: {
                 legend: {
+                    display: false,
                     position: 'bottom',
                     labels: {
                         font: {
