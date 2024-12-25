@@ -531,6 +531,7 @@ function handleSelectedFile(event, path) {
                         if (dataset.yAxisID) {
                             scales[dataset.yAxisID] = {
                                 display: true,
+                                position: 'right',
                                 ticks: {
                                     display: true,
                                     position: 'left',
