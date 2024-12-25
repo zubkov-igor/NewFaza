@@ -467,6 +467,9 @@ document.getElementById('stopButton').addEventListener('click', async () => {
         // Делаем кнопку "Применить" неактивной
         const applyButton = document.getElementById('apply');
         applyButton.disabled = true; // Оставляем кнопку "Применить" неактивной
+
+        // Блокируем все input поля
+        inputs.forEach(input => input.disabled = true); // Блокируем все поля ввода
     }
 });
 
