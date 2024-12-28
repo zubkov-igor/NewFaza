@@ -318,7 +318,137 @@ function startChart() {
                 '' :
                 'Выберите хотя бы один график в настройках.';
             onlineChart.update();
+
+            // Записываем данные в CSV в реальном времени
+            await writeDataToCSVInRealTime();
         }, 1000);
+    }
+}
+
+// Функция записи данных в CSV в реальном времени
+async function writeDataToCSVInRealTime() {
+    // Получаем значения для client, bush, well и work
+    const clientValue = document.getElementById('client').value;
+    const bushValue = document.getElementById('bush').value;
+    const wellValue = document.getElementById('well').value;
+    const workValue = document.getElementById('name_work').value;
+
+    // Создаем объект dataMap
+    const dataMap = {};
+
+    // Заполняем dataMap данными из графика
+    onlineChart.data.datasets.forEach(dataset => {
+        dataMap[dataset.label] = dataset.data; // Используем label как ключ и массив данных как значение
+    });
+
+    // Проверяем, что dataMap содержит данные
+    if (Object.keys(dataMap).length === 0 || Object.values(dataMap).every(values => values.length === 0)) {
+        console.log('Нет данных для записи в файл.');
+        return;
+    }
+
+    // Записываем данные в CSV
+    await writeDataToCSV(clientValue, bushValue, wellValue, workValue, new Date().toLocaleDateString(), dataMap);
+}
+
+// Обработчик события "Стоп"
+document.getElementById('stopButton').addEventListener('click', async () => {
+    if (isChartRunning) {
+        // Останавливаем обновление графика
+        isChartRunning = false;
+
+        // Очищаем интервал для остановки обновлений графика
+        clearInterval(updateInterval);
+
+        // Восстанавливаем активность input
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => input.disabled = false);
+
+        // Делаем кнопку "Стоп" неактивной
+        const stopButton = document.getElementById('stopButton');
+        stopButton.disabled = true;
+
+        // Делаем кнопку "Применить" неактивной
+        const applyButton = document.getElementById('apply');
+        applyButton.disabled = true; // Оставляем кнопку "Применить" неактивной
+
+        // Блокируем все input поля
+        inputs.forEach(input => input.disabled = true); // Блокируем все поля ввода
+    }
+});
+
+let headersWritten = false; // Флаг для отслеживания, были ли записаны заголовки
+let clientInfoWritten = false; // Флаг для отслеживания, была ли информация о клиенте записана
+
+async function writeDataToCSV(client, bush, well, work, date, dataMap) {
+    if (!dataMap) {
+        console.error('Ошибка: dataMap является undefined');
+        return; // Прерываем выполнение функции
+    }
+
+    try {
+        const fileExists = fs.existsSync(csvFilePath);
+
+        // Получаем динамические заголовки из dataMap
+        const headers = ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'];
+        const chartNames = Object.keys(dataMap);
+
+        // Добавляем названия графиков в заголовки
+        headers.push(...chartNames);
+
+        // Записываем заголовки только один раз
+        if (!headersWritten) {
+            fs.writeFileSync(csvFilePath, headers.join(',') + '\n');
+            headersWritten = true; // Устанавливаем флаг, что заголовки записаны
+        }
+
+        // Записываем данные
+        const maxLength = Math.max(...Object.values(dataMap).map(arr => arr.length)); // Максимальная длина массивов
+
+        const uniqueRows = new Set(); // Используем Set для хранения уникальных строк
+
+        // Начальная временная метка
+        let currentTime = new Date(); // Получаем текущее время
+        currentTime.setSeconds(currentTime.getSeconds() - maxLength); // Устанавливаем начальное время на maxLength секунд назад
+
+        for (let i = 0; i < maxLength; i++) {
+            const rowTime = currentTime.toLocaleTimeString(); // Получаем временную метку для текущей строки
+            const row = [
+                // Записываем информацию о клиенте только для первой строки
+                !clientInfoWritten && i === 0 ? client : '', // Записываем значение Client только для первой строки
+                !clientInfoWritten && i === 0 ? bush : '', // Записываем значение Bush только для первой строки
+                !clientInfoWritten && i === 0 ? well : '', // Записываем значение Well только для первой строки
+                !clientInfoWritten && i === 0 ? work : '', // Записываем значение Work только для первой строки
+                !clientInfoWritten && i === 0 ? date : '', // Записываем значение Date только для первой строки
+                rowTime // Используем временную метку для текущей строки
+            ];
+
+            // Добавляем данные графиков
+            for (const chartName of chartNames) {
+                const value = dataMap[chartName][i] !== undefined ? dataMap[chartName][i] : ''; // Если значение существует, добавляем его
+                row.push(value);
+            }
+
+            // Преобразуем строку в формат для проверки уникальности
+            const rowString = row.join(',');
+
+            // Проверяем, существует ли такая строка
+            if (!uniqueRows.has(rowString)) {
+                uniqueRows.add(rowString); // Добавляем строку в Set
+                fs.appendFileSync(csvFilePath, row.join(',') + '\n'); // Записываем строку в файл
+            }
+
+            // Увеличиваем временную метку на 1 секунду для следующей строки
+            currentTime.setSeconds(currentTime.getSeconds() + 1);
+        }
+
+        // Устанавливаем флаг, что информация о клиенте была записана
+        clientInfoWritten = true;
+
+        console.log('Данные успешно записаны в CSV файл.');
+    } catch (error) {
+        console.error('Ошибка записи в CSV файл:', error);
+        console.error('Проверка dataMap:', dataMap);
     }
 }
 
@@ -473,76 +603,7 @@ document.getElementById('stopButton').addEventListener('click', async () => {
     }
 });
 
-// Функция записи данных в CSV
-let headersWritten = false; // Флаг для отслеживания, были ли записаны заголовки
 
-async function writeDataToCSV(client, bush, well, work, date, dataMap) {
-    if (!dataMap) {
-        console.error('Ошибка: dataMap является undefined');
-        return; // Прерываем выполнение функции
-    }
-
-    try {
-        const fileExists = fs.existsSync(csvFilePath);
-
-        // Получаем динамические заголовки из dataMap
-        const headers = ['Client', 'Bush', 'Well', 'Work', 'Date', 'Time'];
-        const chartNames = Object.keys(dataMap);
-
-        // Добавляем названия графиков в заголовки
-        headers.push(...chartNames);
-
-        // Записываем заголовки только один раз
-        if (!headersWritten) {
-            fs.writeFileSync(csvFilePath, headers.join(',') + '\n');
-            headersWritten = true; // Устанавливаем флаг, что заголовки записаны
-        }
-
-        // Записываем данные
-        const maxLength = Math.max(...Object.values(dataMap).map(arr => arr.length)); // Максимальная длина массивов
-
-        const uniqueRows = new Set(); // Используем Set для хранения уникальных строк
-
-        // Начальная временная метка
-        let currentTime = new Date(); // Получаем текущее время
-        currentTime.setSeconds(currentTime.getSeconds() - maxLength); // Устанавливаем начальное время на maxLength секунд назад
-
-        for (let i = 0; i < maxLength; i++) {
-            const rowTime = currentTime.toLocaleTimeString(); // Получаем временную метку для текущей строки
-            const row = [
-                i === 0 ? client : '', // Записываем значение Client только для первой строки
-                i === 0 ? bush : '', // Записываем значение Bush только для первой строки
-                i === 0 ? well : '', // Записываем значение Well только для первой строки
-                i === 0 ? work : '', // Записываем значение Work только для первой строки
-                i === 0 ? date : '', // Записываем значение Date только для первой строки
-                rowTime // Используем временную метку для текущей строки
-            ];
-
-            // Добавляем данные графиков
-            for (const chartName of chartNames) {
-                const value = dataMap[chartName][i] !== undefined ? dataMap[chartName][i] : ''; // Если значение существует, добавляем его
-                row.push(value);
-            }
-
-            // Преобразуем строку в формат для проверки уникальности
-            const rowString = row.join(',');
-
-            // Проверяем, существует ли такая строка
-            if (!uniqueRows.has(rowString)) {
-                uniqueRows.add(rowString); // Добавляем строку в Set
-                fs.appendFileSync(csvFilePath, row.join(',') + '\n'); // Записываем строку в файл
-            }
-
-            // Увеличиваем временную метку на 1 секунду для следующей строки
-            currentTime.setSeconds(currentTime.getSeconds() + 1);
-        }
-
-        console.log('Данные успешно записаны в CSV файл.');
-    } catch (error) {
-        console.error('Ошибка записи в CSV файл:', error);
-        console.error('Проверка dataMap:', dataMap);
-    }
-}
 
 // Обработчик события для отображения сообщений
 ipcRenderer.on('display-message', (event, message, filePath) => {

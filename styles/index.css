@@ -11,6 +11,8 @@
     --bs-green: #25b09b;
     --bs-info: #0dcaf0;
 
+    --color-back-dark: #3a424a;
+
     --hue: 223;
     --hue-success: 103;
     --bg: hsl(var(--hue), 10%, 80%);
@@ -19,7 +21,7 @@
     --primary-t: hsla(var(--hue), 90%, 50%, 0);
     --trans-dur: 0.3s;
     --trans-timing: cubic-bezier(0.65, 0, 0.35, 1);
-    font-size: calc(16px + (32 - 16) * (100vw - 320px) / (2560 - 320));
+      font-size: calc(16px + (32 - 16) * (100vw - 320px) / (2560 - 320));
 }
 
 *,
@@ -357,7 +359,7 @@ body {
 
 #archive,
 #online {
-    background-color: #fff;
+    background-color: var(--color-light);
     width: 100%;
     height: 100%;
 }
@@ -818,7 +820,6 @@ input[type="number"] {
 }
 
 /*-----------------------------------------------------------------*/
-
 
 #legend {
     display: flex;
