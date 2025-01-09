@@ -136,13 +136,44 @@ async function updateChartWithModbusData(chart, client) {
         'Плотность': await readModbusData(client, 520),
     };
 
+    // Получаем текущую дату
+const currentDate = new Date();
+
+// Форматируем дату в нужный формат DD.MM.YYYY
+const formattedDate = 
+    String(currentDate.getDate()).padStart(2, '0') + '.' + 
+    String(currentDate.getMonth() + 1).padStart(2, '0') + '.' + 
+    currentDate.getFullYear();
+
+
+        // Получаем данные из формы
+const additionalData = {
+    'Client': document.getElementById('client').value,
+    'Bush': document.getElementById('bush').value,
+    'Well': document.getElementById('well').value,
+    'Work': document.getElementById('name_work').value,
+    'Date': formattedDate, // Используем отформатированную дату
+    'Time': new Date().toLocaleTimeString() // Время можно оставить как есть
+};
+
+    // Объединяем данные
+    const combinedData = {
+        ...additionalData,
+        ...dataMap
+    };
+
+    // Отправка данных на сервер
+    await sendDataToServer(combinedData);
+
 async function sendDataToServer(data) {
     // Добавьте недостающие поля, если они есть
     const requiredFields = [
-                            'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
-                            'РасходЛевНас', 'РасходПравНас', 'РасходВыход', 
-                            'ТемпРецирк', 'ПлотРецирк', 'ОбъемВыход', 
-                            'РасходВоды', 'Плотность'];
+        'Client', 'Bush', 'Well', 'Work', 'Date', 'Time',
+        'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
+        'РасходЛевНас', 'РасходПравНас', 'РасходВыход', 
+        'ТемпРецирк', 'ПлотРецирк', 'ОбъемВыход', 
+        'РасходВоды', 'Плотность'
+    ];
 
     for (const field of requiredFields) {
         if (!(field in data)) {
@@ -632,5 +663,3 @@ ipcRenderer.on('display-message', (event, message, filePath) => {
 });
 
 /*-------------------------------------------------------------------------------------*/
-
-
