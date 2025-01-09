@@ -136,6 +136,46 @@ async function updateChartWithModbusData(chart, client) {
         'Плотность': await readModbusData(client, 520),
     };
 
+async function sendDataToServer(data) {
+    // Добавьте недостающие поля, если они есть
+    const requiredFields = [
+                            'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
+                            'РасходЛевНас', 'РасходПравНас', 'РасходВыход', 
+                            'ТемпРецирк', 'ПлотРецирк', 'ОбъемВыход', 
+                            'РасходВоды', 'Плотность'];
+
+    for (const field of requiredFields) {
+        if (!(field in data)) {
+            console.error(`Missing field: ${field}`);
+            return; // Прекращаем выполнение, если есть недостающие поля
+        }
+    }
+
+    try {
+        const response = await fetch('https://weblabor.ru/api/receive_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const jsonResponse = await response.json();
+        console.log('Success:', jsonResponse);
+    } catch (error) {
+        console.error('Error sending data:', error);
+    }
+}
+
+    // Отправка данных на сервер
+    await sendDataToServer(dataMap);
+
     // Получаем текущую временную метку
     const currentTime = new Date().toLocaleTimeString();
     timestamps.push(currentTime); // Добавляем временную метку без проверки
@@ -162,14 +202,15 @@ async function updateChartWithModbusData(chart, client) {
             }
 
             // Обновляем отображаемые данные под графиком с использованием цвета
-        const color = chartUnit[chartName].color; // Получаем цвет из chartUnit
-        dataDisplay.innerHTML += `<div style="color: ${color};">${chartName}: ${dataMap[chartName]} ${chartUnit[chartName].unit}</div>`;
+            const color = chartUnit[chartName].color; // Получаем цвет из chartUnit
+            dataDisplay.innerHTML += `<div style="color: ${color};">${chartName}: ${dataMap[chartName]} ${chartUnit[chartName].unit}</div>`;
         }
     }
 
     updateChartAxes(chart);
     chart.update();
 }
+
 
 function updateChartAxes(chart) {
     chart.options.scales = {}; // Очищаем текущие оси 
@@ -589,3 +630,7 @@ ipcRenderer.on('display-message', (event, message, filePath) => {
     messageElement.style.display = 'inline';
     messageElement.classList.remove('hide');
 });
+
+/*-------------------------------------------------------------------------------------*/
+
+
