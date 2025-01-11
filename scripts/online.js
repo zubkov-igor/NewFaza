@@ -152,8 +152,8 @@ const additionalData = {
     'Bush': document.getElementById('bush').value,
     'Well': document.getElementById('well').value,
     'Work': document.getElementById('name_work').value,
-    'Date': formattedDate, // Используем отформатированную дату
-    'Time': new Date().toLocaleTimeString() // Время можно оставить как есть
+    'Date': formattedDate, 
+    'Time': new Date().toLocaleTimeString() 
 };
 
     // Объединяем данные

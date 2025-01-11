@@ -200,7 +200,7 @@ ipcRenderer.on('data-loaded', (event, rows) => {
         document.getElementById('work').value = data.Work || '';
 
         // Сохраняем дату из загруженных данных
-        loadedData = data.Date || ''; // Убедитесь, что вы получаете дату из правильного поля
+        loadedData = data.Date || ''; 
 
         // Обновляем clientInfo
         clientInfo = `Заказчик: ${data.Client}. Куст: ${data.Bush}. Скважина: ${data.Well}. Работа: ${data.Work}. Дата: ${loadedData}.`;
