@@ -55,7 +55,7 @@ function sleep(ms) {
 // Функция для подключения к устройству Modbus
 async function connectModbus() {
     try {
-        // await client.connectTCP("192.168.68.5", { port: 502 });
+        //await client.connectTCP("192.168.65.5", { port: 502 });
         await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         console.log('Подключение к Modbus успешно');
@@ -131,30 +131,30 @@ async function updateChartWithModbusData(chart, client) {
         'РасходВыход': await readModbusData(client, 510),
         'ТемпРецирк': await readModbusData(client, 512),
         'ПлотРецирк': await readModbusData(client, 514),
-        'ОбъемВыход': await readModbusData(client, 516),
+        'ОбъемВыход': await readModbusData(client, 570),
         'РасходВоды': await readModbusData(client, 518),
         'Плотность': await readModbusData(client, 520),
     };
 
-    // Получаем текущую дату
-const currentDate = new Date();
+    // Получаем текущую временную метку
+    const currentTime = new Date().toLocaleTimeString();
+    timestamps.push(currentTime); // Добавляем временную метку без проверки
 
-// Форматируем дату в нужный формат DD.MM.YYYY
-const formattedDate = 
-    String(currentDate.getDate()).padStart(2, '0') + '.' + 
-    String(currentDate.getMonth() + 1).padStart(2, '0') + '.' + 
-    currentDate.getFullYear();
+    // Форматируем дату в нужный формат DD.MM.YYYY
+    const formattedDate = 
+        String(new Date().getDate()).padStart(2, '0') + '.' + 
+        String(new Date().getMonth() + 1).padStart(2, '0') + '.' + 
+        new Date().getFullYear();
 
-
-        // Получаем данные из формы
-const additionalData = {
-    'Client': document.getElementById('client').value,
-    'Bush': document.getElementById('bush').value,
-    'Well': document.getElementById('well').value,
-    'Work': document.getElementById('name_work').value,
-    'Date': formattedDate, 
-    'Time': new Date().toLocaleTimeString() 
-};
+    // Получаем данные из формы
+    const additionalData = {
+        'Client': document.getElementById('client').value,
+        'Bush': document.getElementById('bush').value,
+        'Well': document.getElementById('well').value,
+        'Work': document.getElementById('name_work').value,
+        'Date': formattedDate, 
+        'Time': currentTime // Используем уже объявленную переменную
+    };
 
     // Объединяем данные
     const combinedData = {
@@ -164,6 +164,49 @@ const additionalData = {
 
     // Отправка данных на сервер
     await sendDataToServer(combinedData);
+
+    // Обновление отображаемых данных
+    const dataDisplay = document.getElementById('legend');
+    dataDisplay.innerHTML = ''; // Очищаем предыдущие данные
+
+    for (const chartName in dataMap) {
+        if (shouldDrawChart(chartName)) {
+            let dataset = chart.data.datasets.find(ds => ds.label === chartName);
+            if (dataset) {
+                dataset.data.push(dataMap[chartName]);
+            } else {
+                chart.data.datasets.push({
+                    label: chartName,
+                    data: [dataMap[chartName]],
+                    backgroundColor: chartConfig[chartName].color,
+                    borderColor: chartConfig[chartName].color,
+                    borderWidth: 1,
+                    tension: 0.4,
+                    yAxisID: chartName
+                });
+            }
+
+            // Обновляем отображаемые данные под графиком с использованием цвета
+            const color = chartUnit[chartName].color; // Получаем цвет из chartUnit
+            dataDisplay.innerHTML += `<div style="color: ${color};">${chartName}: ${dataMap[chartName]} ${chartUnit[chartName].unit}</div>`;
+        }
+    }
+
+    // Удаляем старые метки и данные, если длина превышает максимальное значение
+    const maxLabels = 80; // Максимальное количество меток на оси X
+    if (chart.data.labels.length > maxLabels) {
+        chart.data.labels.shift(); // Удаляем первую метку
+        chart.data.datasets.forEach(dataset => {
+            dataset.data.shift(); // Удаляем первое значение для каждого набора данных
+        });
+    }
+
+    // Добавляем новую метку
+    chart.data.labels.push(currentTime);
+
+    updateChartAxes(chart);
+    chart.update();
+
 
 async function sendDataToServer(data) {
     // Добавьте недостающие поля, если они есть
@@ -177,7 +220,6 @@ async function sendDataToServer(data) {
 
     for (const field of requiredFields) {
         if (!(field in data)) {
-            console.error(`Missing field: ${field}`);
             return; // Прекращаем выполнение, если есть недостающие поля
         }
     }
@@ -206,14 +248,6 @@ async function sendDataToServer(data) {
 
     // Отправка данных на сервер
     await sendDataToServer(dataMap);
-
-    // Получаем текущую временную метку
-    const currentTime = new Date().toLocaleTimeString();
-    timestamps.push(currentTime); // Добавляем временную метку без проверки
-
-    // Обновление отображаемых данных
-    const dataDisplay = document.getElementById('legend');
-    dataDisplay.innerHTML = ''; // Очищаем предыдущие данные
 
     for (const chartName in dataMap) {
         if (shouldDrawChart(chartName)) {
@@ -334,7 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             scales: {
-                x: {},
+                x: {
+                    position: 'bottom',
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 20,
+                    }
+                },
                 y: {
                     position: 'right' // Устанавливаем позицию оси Y вправо
                 }
@@ -502,19 +542,18 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
     }
 }
 
-// Disable the start button and stop button initially
 const startButton = document.getElementById('startButton');
 const stopButton = document.getElementById('stopButton');
 startButton.disabled = true;
-stopButton.disabled = true; // Добавлено отключение кнопки "Стоп"
+stopButton.disabled = true; 
 
-// Add event listeners to input fields to check if they are filled
+
 const inputFields = ['client', 'bush', 'well', 'name_work'];
 inputFields.forEach(field => {
     document.getElementById(field).addEventListener('input', checkFields);
 });
 
-// Add event listener for the start button
+
 startButton.addEventListener('click', startChart);
 
 // Функция для проверки, заполнены ли все необходимые поля
@@ -526,13 +565,13 @@ function checkFields() {
 
     const startButton = document.getElementById('startButton');
     const stopButton = document.getElementById('stopButton'); // Получаем элемент кнопки "Стоп"
-    const messageElement = document.getElementById('message'); // Get the message element
+    const messageElement = document.getElementById('message'); 
 
-    // Enable or disable the start button and stop button based on field values
+   
     if (client && bush && well && nameWork) {
         startButton.disabled = false;
         stopButton.disabled = false; // Убираем disabled с кнопки "Стоп"
-        messageElement.style.display = 'none'; // Hide the message if all fields are filled
+        messageElement.style.display = 'none'; 
     } else {
         startButton.disabled = true;
         stopButton.disabled = true; // Снова устанавливаем disabled на кнопку "Стоп"

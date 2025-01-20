@@ -50,7 +50,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ДавлЛевНас</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>500</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -64,9 +64,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -77,7 +75,7 @@
 			</Register>
 			<Register>
 				<Name>ДавВыход</Name>
-				<Addr>504</Addr>
+				<Addr>570</Addr>
 				<BitAddr>0</BitAddr>
 				<vType>4</vType>
 				<Description>
@@ -87,9 +85,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -99,7 +95,7 @@
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
-				<Name>РасходЛевГас</Name>
+				<Name>РасходЛевНас</Name>
 				<Addr>506</Addr>
 				<BitAddr>0</BitAddr>
 				<vType>4</vType>
@@ -116,7 +112,7 @@
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
-				<RegFullName>Сервер.Устройство.РасходЛевГас</RegFullName>
+				<RegFullName>Сервер.Устройство.РасходЛевНас</RegFullName>
 				<RegsCount>2</RegsCount>
 				<Value>0</Value>
 				<DefValue>0</DefValue>
@@ -133,9 +129,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -156,9 +150,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -180,7 +172,7 @@
 				<Group>
 				</Group>
 				<Min>0</Min>
-				<Max>500</Max>
+				<Max>0</Max>
 				<WorkType>1</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
@@ -202,9 +194,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -225,9 +215,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -248,9 +236,7 @@
 				</ConstGroupName>
 				<Group>
 				</Group>
-				<Min>0</Min>
-				<Max>500</Max>
-				<WorkType>1</WorkType>
+				<WorkType>2</WorkType>
 				<DataFormat>4</DataFormat>
 				<Percent>0</Percent>
 				<Period>100</Period>
@@ -279,7 +265,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.Плотность</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>224.693435668945</Value>
 				<DefValue>0</DefValue>
 			</Register>
 		</Device>
