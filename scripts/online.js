@@ -85,8 +85,8 @@ async function checkConnection() {
 
 // Инициируем подключение и проверку соединения
 async function startModbus() {
-    await connectModbus(); // Первоначальное подключение
-    setInterval(checkConnection, 5000); // Проверяем соединение каждые 5 секунд
+    await connectModbus(); 
+    setInterval(checkConnection, 5000);
 }
 
 // Запускаем процесс
@@ -193,7 +193,7 @@ async function updateChartWithModbusData(chart, client) {
     }
 
     // Удаляем старые метки и данные, если длина превышает максимальное значение
-    const maxLabels = 80; // Максимальное количество меток на оси X
+    const maxLabels = 90; // Максимальное количество меток на оси X
     if (chart.data.labels.length > maxLabels) {
         chart.data.labels.shift(); // Удаляем первую метку
         chart.data.datasets.forEach(dataset => {
@@ -209,7 +209,6 @@ async function updateChartWithModbusData(chart, client) {
 
 
 async function sendDataToServer(data) {
-    // Добавьте недостающие поля, если они есть
     const requiredFields = [
         'Client', 'Bush', 'Well', 'Work', 'Date', 'Time',
         'ДавЛевНас', 'ДавПравНас', 'ДавВыход', 
@@ -240,7 +239,7 @@ async function sendDataToServer(data) {
         }
 
         const jsonResponse = await response.json();
-        console.log('Success:', jsonResponse);
+        //console.log('Success:', jsonResponse);
     } catch (error) {
         console.error('Error sending data:', error);
     }
@@ -376,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 },
                 y: {
-                    position: 'right' // Устанавливаем позицию оси Y вправо
+                    position: 'right'
                 }
             },
             plugins: {
@@ -391,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         boxWidth: 30,
                     }
                 },
-                unitPlugin // Включаем наш плагин
+                unitPlugin
             },
             grid: {
                 display: false
@@ -414,17 +413,19 @@ function startChart() {
         const startButton = document.getElementById('startButton');
         startButton.disabled = true;
 
-        // Start the interval and store its ID
+        // Устанавливаем интервал опроса Modbus на 1 секунду
         updateInterval = setInterval(async () => {
             const currentTime = new Date().toLocaleTimeString();
             onlineChart.data.labels.push(currentTime);
             let shouldUpdateChart = false;
+
             for (const chartName in chartConfig) {
                 if (shouldDrawChart(chartName)) {
                     shouldUpdateChart = true;
                     await updateChartWithModbusData(onlineChart, client);
                 }
             }
+
             const messageElement = document.getElementById('message');
             messageElement.textContent = shouldUpdateChart ?
                 '' :
@@ -433,7 +434,7 @@ function startChart() {
 
             // Записываем данные в CSV в реальном времени
             await writeDataToCSVInRealTime();
-        }, 1000);
+        }, 1000); // Интервал 1 секунда
     }
 }
 
@@ -515,13 +516,14 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
         }
 
         // Формируем строку для записи
+        const currentTime = new Date().toLocaleTimeString();
         const row = [
             clientInfoWritten ? '' : client, // Записываем значение Client только для первой строки
             clientInfoWritten ? '' : bush, // Записываем значение Bush только для первой строки
             clientInfoWritten ? '' : well, // Записываем значение Well только для первой строки
             clientInfoWritten ? '' : work, // Записываем значение Work только для первой строки
             clientInfoWritten ? '' : date, // Записываем значение Date только для первой строки
-            new Date().toLocaleTimeString() // Используем текущее время для текущей строки
+            currentTime // Используем текущее время для текущей строки
         ];
 
         // Добавляем данные графиков
@@ -530,13 +532,16 @@ async function writeDataToCSV(client, bush, well, work, date, dataMap) {
             row.push(value);
         }
 
-        // Записываем строку в файл
-        fs.appendFileSync(csvFilePath, row.join(',') + '\n'); // Записываем строку в файл
-
-        // Устанавливаем флаг, что информация о клиенте была записана
-        clientInfoWritten = true;
-
-        console.log('Данные успешно записаны в CSV файл.');
+        // Проверяем, есть ли данные для записи
+        if (row.slice(0, 6).some(value => value !== '') || row.slice(6).some(value => value !== '')) {
+            // Записываем строку в файл
+            fs.appendFileSync(csvFilePath, row.join(',') + '\n'); // Записываем строку в файл
+            // Устанавливаем флаг, что информация о клиенте была записана
+            clientInfoWritten = true;
+            console.log('Данные успешно записаны в CSV файл.');
+        } else {
+            console.log('Нет данных для записи в файл.');
+        }
     } catch (error) {
         console.error('Ошибка записи в CSV файл:', error);
     }
