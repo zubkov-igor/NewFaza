@@ -457,21 +457,11 @@ function handleSelectedFile(event, path) {
                 .on('error', error => {
                     console.error('Error parsing CSV:', error);
                 })
-         .on('end', () => {
+        .on('end', () => {
     document.getElementById('spinner').style.display = 'none';
 
-    // Определяем шаг
-    const totalPoints = formattedData.length;
-    const maxPoints = 40;
-    const step = Math.floor(totalPoints / maxPoints); // Шаг для выборки данных
-
-    // Выбираем данные с интервалом
-    const limitedData = [];
-    for (let i = 0; i < totalPoints; i += step) {
-        limitedData.push(formattedData[i]);
-    }
-
-    const time = limitedData.map(row => {
+    // Убираем шаг и выборку данных
+    const time = formattedData.map(row => {
         const parsedTime = Date.parse(`1970-01-01T${row.Time}`);
         return isNaN(parsedTime) ? null : new Date(parsedTime).toLocaleTimeString('en-US', {
             hour: '2-digit',
@@ -481,50 +471,51 @@ function handleSelectedFile(event, path) {
         });
     });
 
-                    const datasets = [];
-                    const addDataset = (label, dataKey, color, yAxisID) => {
-                        if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
-                            datasets.push({
-                                label: label,
-                                data: formattedData.map(row => parseFloat(row[dataKey])),
-                                backgroundColor: formattedData.map(() => color),
-                                borderColor: color,
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                cubicInterpolationMode: 'monotone',
-                                yAxisID: yAxisID,
-                                color: color
-                            });
-                        }
-                    };
+    const datasets = [];
+    const addDataset = (label, dataKey, color, yAxisID) => {
+        if (formattedData.some(row => row[dataKey] !== undefined && row[dataKey] !== null)) {
+            datasets.push({
+                label: label,
+                data: formattedData.map(row => parseFloat(row[dataKey])),
+                backgroundColor: formattedData.map(() => color),
+                borderColor: color,
+                borderWidth: 1,
+                pointRadius: 0,
+                cubicInterpolationMode: 'monotone',
+                yAxisID: yAxisID,
+                color: color
+            });
+        }
+    };
 
-                    addDataset('ДавЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
-                    addDataset('ДавПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
-                    addDataset('ДавВыход', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
-                    addDataset('РасходЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
-                    addDataset('РасходПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
-                    addDataset('РасходВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
-                    addDataset('ТемпРецирк', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
-                    addDataset('ПлотРецирк', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
-                    addDataset('ОбъемВыход', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
-                    addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
-                    addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
+    // Добавляем наборы данных
+    addDataset('ДавЛевНас', 'P_left', 'rgba(153,0,2,1)', 'P_left');
+    addDataset('ДавПравНас', 'P_right', 'rgba(255,127,126,1)', 'P_right');
+    addDataset('ДавВыход', 'P_pipe', 'rgba(254,0,0,1)', 'P_pipe');
+    addDataset('РасходЛевНас', 'Q_left', 'rgba(51,153,254,1)', 'Q_left');
+    addDataset('РасходПравНас', 'Q_right', 'rgba(152,204,254,1)', 'Q_right');
+    addDataset('РасходВыход', 'Q_pipe', 'rgba(0,0,255,1)', 'Q_pipe');
+    addDataset('ТемпРецирк', 'T_rec', 'rgba(254,215,0,1)', 'T_rec');
+    addDataset('ПлотРецирк', 'P_rec', 'rgba(127,204,126,1)', 'P_rec');
+    addDataset('ОбъемВыход', 'V_pipe', 'rgba(0,0,0,1)', 'V_pipe');
+    addDataset('РасходВоды', 'Qw', 'rgba(255,102,0,1)', 'Qw');
+    addDataset('Плотность', 'Plm', 'rgba(0,153,0,1)', 'Plm');
 
-                    // Заполнение <select> названиями графиков
-                    const chartSelectElement = document.getElementById('chartSelect');
-                    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>';
+    // Заполнение <select> названиями графиков
+    const chartSelectElement = document.getElementById('chartSelect');
+    chartSelectElement.innerHTML = '<option value="" selected>Выберите график</option>';
 
-                    datasets.forEach(dataset => {
-                        const option = document.createElement('option');
-                        option.value = dataset.label; // Значение опции
-                        option.textContent = dataset.label; // Текст опции
-                        chartSelectElement.appendChild(option); // Добавление опции в select
-                    });
+    datasets.forEach(dataset => {
+        const option = document.createElement('option');
+        option.value = dataset.label; // Значение опции
+        option.textContent = dataset.label; // Текст опции
+        chartSelectElement.appendChild(option); // Добавление опции в select
+    });
 
-                    // Устанавливаем первый график по умолчанию
-                    if (datasets.length > 0) {
-                        currentChartId = datasets[0].label;
-                    }
+    // Устанавливаем первый график по умолчанию
+    if (datasets.length > 0) {
+        currentChartId = datasets[0].label;
+    }
 
                     const scales = {};
                     datasets.forEach(dataset => {

@@ -50,7 +50,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ДавлЛевНас</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>500</Value>
+				<Value>430,316192626953</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -72,12 +72,12 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ДавПравНас</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>450</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
 				<Name>ДавВыход</Name>
-				<Addr>570</Addr>
+				<Addr>504</Addr>
 				<BitAddr>0</BitAddr>
 				<vType>4</vType>
 				<Description>
@@ -95,7 +95,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ДавВыход</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>450</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -118,7 +118,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.РасходЛевНас</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>50</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -141,7 +141,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.РасходПравНас</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>33,4643630981445</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -164,7 +164,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.РасходВыход</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>50</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -187,7 +187,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ТемпРецирк</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>18,3697357177734</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -215,7 +215,7 @@
 			</Register>
 			<Register>
 				<Name>ОбъемВыход</Name>
-				<Addr>570</Addr>
+				<Addr>516</Addr>
 				<BitAddr>0</BitAddr>
 				<vType>4</vType>
 				<Description>
@@ -233,7 +233,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.ОбъемВыход</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>100</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -256,7 +256,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.РасходВоды</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>0</Value>
+				<Value>50</Value>
 				<DefValue>0</DefValue>
 			</Register>
 			<Register>
@@ -279,7 +279,7 @@
 				<Period>100</Period>
 				<RegFullName>Сервер.Устройство.Плотность</RegFullName>
 				<RegsCount>2</RegsCount>
-				<Value>500</Value>
+				<Value>0</Value>
 				<DefValue>0</DefValue>
 			</Register>
 		</Device>

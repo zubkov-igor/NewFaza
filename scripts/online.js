@@ -131,7 +131,7 @@ async function updateChartWithModbusData(chart, client) {
         'РасходВыход': await readModbusData(client, 510),
         'ТемпРецирк': await readModbusData(client, 512),
         'ПлотРецирк': await readModbusData(client, 514),
-        'ОбъемВыход': await readModbusData(client, 570),
+        'ОбъемВыход': await readModbusData(client, 516),
         'РасходВоды': await readModbusData(client, 518),
         'Плотность': await readModbusData(client, 520),
     };
@@ -193,7 +193,7 @@ async function updateChartWithModbusData(chart, client) {
     }
 
     // Удаляем старые метки и данные, если длина превышает максимальное значение
-    const maxLabels = 90; // Максимальное количество меток на оси X
+    const maxLabels = 40; // Максимальное количество меток на оси X
     if (chart.data.labels.length > maxLabels) {
         chart.data.labels.shift(); // Удаляем первую метку
         chart.data.datasets.forEach(dataset => {

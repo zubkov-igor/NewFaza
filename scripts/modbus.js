@@ -12,11 +12,11 @@ function updateButtonColor(isConnected) {
     if (isConnected) {
         statusButton.style.background = 'radial-gradient(farthest-side at top left, #47CF73, #aceac0)';
         statusButton.disabled = false;
-        //statusButton.textContent = 'ON';
+       // statusButton.textContent = 'A';
     } else {
         statusButton.style.background = 'radial-gradient(farthest-side at top left, #ff6347, #ffa494)';
         statusButton.disabled = true;
-        //statusButton.textContent = 'Off';
+        //statusButton.textContent = 'A';
     }
 }
 
