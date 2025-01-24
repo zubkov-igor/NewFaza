@@ -13,9 +13,26 @@ const {
     execFile
 } = require('child_process');
 const fastcsv = require('fast-csv');
+const mysql = require('mysql2');
 
 let mainWindow;
 
+// Создание подключения к базе данных
+const dbConnection = mysql.createConnection({
+    host: '185.177.219.51',
+    user: 'root', 
+    password: 'OgurvatInOtdyub8',
+    database: 'nfaza_db' 
+});
+
+// Установление соединения
+dbConnection.connect((err) => {
+    if (err) {
+        console.error('Ошибка подключения к базе данных:', err);
+        return;
+    }
+    console.log('Подключение к базе данных успешно установлено.');
+});
 
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -44,10 +61,32 @@ if (!gotTheLock) {
         mainWindow.setMenu(null);
         mainWindow.loadFile('index.html');
         mainWindow.webContents.openDevTools();
-        win.maximize();
+        mainWindow.maximize();
     }
 
-    app.whenReady().then(createWindow);
+// Обработка IPC для выполнения запросов к базе данных
+ipcMain.on('execute-query', (event, query) => {
+    dbConnection.query(query, (error, results) => {
+        if (error) {
+            event.reply('query-response', { error });
+            return;
+        }
+        event.reply('query-response', { results });
+    });
+});
+
+app.whenReady().then(createWindow);
+
+// Закрытие соединения при завершении приложения
+app.on('before-quit', () => {
+    dbConnection.end((err) => {
+        if (err) {
+            console.error('Ошибка закрытия подключения:', err);
+        } else {
+            console.log('Подключение закрыто.');
+        }
+    });
+});
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {
@@ -85,25 +124,21 @@ if (!gotTheLock) {
             title: 'Сохранить CSV файл',
             defaultPath: 'chart-data.csv',
             filters: [{
-                    name: 'CSV Files',
-                    extensions: ['csv']
-                },
-                {
-                    name: 'All Files',
-                    extensions: ['*']
-                }
-            ]
+                name: 'CSV Files',
+                extensions: ['csv']
+            },
+            {
+                name: 'All Files',
+                extensions: ['*']
+            }]
         });
         return result.filePath;
     });
 
     // Обработчик для сохранения CSV
-    ipcMain.on('save-csv', (event, {
-        filePath,
-        csvData
-    }) => {
+    ipcMain.on('save-csv', (event, { filePath, csvData }) => {
         if (!filePath) {
-            event.sender.send('display-message', 'Имя файла не может быть пустым', null);
+                            event.sender.send('display-message', 'Имя файла не может быть пустым', null);
             return;
         }
         fs.writeFile(filePath, csvData, 'utf8', (err) => {
@@ -197,12 +232,7 @@ if (!gotTheLock) {
     });
 
     /*-----------------------------------------------------------------------------*/
-    ipcMain.on('save-data', (event, {
-        filePath,
-        newData
-    }) => {
-        
-
+    ipcMain.on('save-data', (event, { filePath, newData }) => {
         // Проверка на наличие данных
         if (!newData || !newData.client) {
             console.error('Данные не были переданы или имеют неверный формат:', newData);
@@ -218,9 +248,7 @@ if (!gotTheLock) {
 
         // Чтение CSV файла
         fs.createReadStream(filePath)
-            .pipe(fastcsv.parse({
-                headers: true
-            }))
+            .pipe(fastcsv.parse({ headers: true }))
             .on('data', (row) => {
                 // Обновляем первую строку после заголовков
                 if (rowIndex === 0) { 
@@ -230,19 +258,14 @@ if (!gotTheLock) {
                     row.Work = newData.work || '';
                 }
 
-                
                 rows.push(row);
                 rowIndex++; 
             })
             .on('end', () => {
-                
-                const csvStream = fastcsv.format({
-                    headers: true
-                });
+                const csvStream = fastcsv.format({ headers: true });
                 const writableStream = fs.createWriteStream(filePath);
 
                 writableStream.on('finish', () => {
-                   
                     event.reply('save-data-response', {
                         success: true,
                         clientInfo: newData
@@ -254,13 +277,12 @@ if (!gotTheLock) {
                     event.reply('save-data-response', {
                         success: false,
                         error: error.message
-                    });
+                                            });
                 });
 
                 // Пайпим данные в поток записи
                 csvStream.pipe(writableStream);
                 rows.forEach((row) => {
-                    
                     csvStream.write(row);
                 });
                 csvStream.end(); 
@@ -273,15 +295,14 @@ if (!gotTheLock) {
                 });
             });
     });
+
     /*------------------------------------------------------------------------*/
 
     ipcMain.on('load-data', (event, filePath) => {
         const rows = [];
 
         fs.createReadStream(filePath)
-            .pipe(fastcsv.parse({
-                headers: true
-            }))
+            .pipe(fastcsv.parse({ headers: true }))
             .on('data', (row) => {
                 rows.push(row);
             })
@@ -294,5 +315,23 @@ if (!gotTheLock) {
             });
     });
 
+    // Пример выполнения запроса к базе данных
+    dbConnection.query('SELECT client FROM chart', (error, results) => {
+        if (error) {
+            console.error('Ошибка выполнения запроса:', error);
+            return;
+        }
+        console.log('Результаты запроса:', results);
+    });
 
+    // Закрытие подключения
+    app.on('before-quit', () => {
+        dbConnection.end((err) => {
+            if (err) {
+                console.error('Ошибка закрытия подключения:', err);
+            } else {
+                console.log('Подключение закрыто.');
+            }
+        });
+    });
 }

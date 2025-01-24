@@ -19,6 +19,7 @@
         "chartjs-plugin-zoom": "^2.0.1",
         "fast-csv": "^5.0.2",
         "modbus-serial": "^8.0.17",
+        "mysql2": "^3.12.0",
         "node-gyp": "^10.2.0",
         "quickchart-js": "^3.1.3"
     },

@@ -1,3 +1,24 @@
+const { ipcRenderer: connectIpcRenderer } = require('electron');
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Пример выполнения SQL-запроса
+    const query = 'SELECT client FROM chart';
+    connectIpcRenderer.send('execute-query', query); 
+
+    connectIpcRenderer.on('query-response', (event, response) => {
+        if (response.error) {
+            console.error('Ошибка выполнения запроса:', response.error);
+        } else {
+            console.log('Результаты запроса:', response.results);
+        }
+    });
+
+  
+    connectIpcRenderer.on('display-message', (event, message, filePath) => {
+        alert(message);
+    });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const indicator = document.getElementById('indicator');
     const icon = document.querySelector('.icon');
@@ -15,13 +36,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkServerConnection() {
         try {
-            const response = await fetch('https://weblabor.ru/api/receive_data'); // Замените на ваш сервер
-            updateIndicatorColor(response.ok); // Обновляем цвет индикатора в зависимости от состояния
+            const response = await fetch('https://weblabor.ru/api/receive_data');
+            updateIndicatorColor(response.ok);
         } catch (error) {
-            updateIndicatorColor(false); // Если произошла ошибка, устанавливаем красный цвет
+            updateIndicatorColor(false);
         }
     }
 
     // Периодическая проверка связи с сервером
-    setInterval(checkServerConnection, 3000); // Проверка каждые 5 секунд
+    setInterval(checkServerConnection, 3000);
+
+    // Отправляем запрос на выполнение
+    const query = 'SELECT client FROM chart';
+    connectIpcRenderer.send('execute-query', query);
+
+    // Обрабатываем ответ
+    connectIpcRenderer.on('query-response', (event, response) => {
+        if (response.error) {
+            console.error('Ошибка выполнения запроса:', response.error);
+        } else {
+            console.log('Результаты запроса:', response.results);
+        }
+    });
 });

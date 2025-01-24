@@ -24,6 +24,7 @@ function updateButtonColor(isConnected) {
 async function connectModbus() {
     try {
       //await client.connectTCP("192.168.65.5", { port: 502 });
+     //await client.connectTCP("186.168.65.5", { port: 502 });
      await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         updateButtonColor(true);
@@ -46,7 +47,7 @@ setInterval(async () => {
         client.close();
         connectModbus();
     }
-}, 5000);
+}, 3000);
 
 // Инициируем подключение
 connectModbus();

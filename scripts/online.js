@@ -56,6 +56,7 @@ function sleep(ms) {
 async function connectModbus() {
     try {
         //await client.connectTCP("192.168.65.5", { port: 502 });
+        //await client.connectTCP("186.168.65.5", { port: 502 });
         await client.connectTCP("localhost", { port: 502 });
         client.setID(1);
         console.log('Подключение к Modbus успешно');

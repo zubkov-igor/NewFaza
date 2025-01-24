@@ -1,3 +1,4 @@
+//archive.js
 const {
     ipcRenderer
 } = require('electron');
@@ -711,3 +712,4 @@ function handleSelectedFile(event, path) {
             document.getElementById('spinner').style.display = 'none';
         });
 }
+
